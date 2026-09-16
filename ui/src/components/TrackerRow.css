@@ -1,0 +1,46 @@
+.trackrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  flex-wrap: wrap;
+}
+
+.trackrow__open {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: 1;
+  min-width: 12rem;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.trackrow__open:hover .trackrow__role {
+  color: var(--pencil);
+}
+
+.trackrow__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.trackrow__role {
+  font-weight: 500;
+}
+
+.trackrow__coverage {
+  flex: none;
+}
+
+.trackrow__delete {
+  flex: none;
+  min-width: 44px;
+}

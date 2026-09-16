@@ -1,0 +1,54 @@
+{
+  "id": "en-pm",
+  "language": "en",
+  "role": "Product Manager",
+  "note": "B2B SaaS is not stated in the CV; specs is partial (problem briefs, not specs).",
+  "cv": "Grace Okafor — Product Manager\n\nExperience\nTidepool Software — Product Manager, 2020-2025\nOwned the onboarding area; raised activation from 31% to 44% over four quarters.\nRan discovery interviews with 60 customers and wrote the problem briefs.\nWorked with a squad of 6 engineers and one designer on a two-week cadence.\nWrote the pricing experiment plan that moved trial conversion by 3 points.\n\nEducation\nMBA, Lagos Business School, 2019\nBSc Statistics, University of Ibadan, 2015\n\nSkills\nProduct discovery, experimentation, SQL, Amplitude, Jira, Figma",
+  "posting": "Product Manager — Ravenlight\n\nRequirements\n- 4+ years of product management in B2B SaaS\n- A track record of moving activation or retention metrics\n- Comfortable running customer discovery\n- Able to write clear specs for engineers\n- Data literacy: can pull your own numbers\n\nNice to have\n- Pricing and packaging experience\n- Experience with PLG motions",
+  "expected_requirements": [
+    {
+      "key": "years",
+      "text": "4+ years of product management",
+      "kind": "must"
+    },
+    {
+      "key": "metrics",
+      "text": "Track record moving activation or retention",
+      "kind": "must"
+    },
+    {
+      "key": "discovery",
+      "text": "Running customer discovery",
+      "kind": "must"
+    },
+    {
+      "key": "specs",
+      "text": "Writing clear specs for engineers",
+      "kind": "must"
+    },
+    {
+      "key": "data",
+      "text": "Data literacy: pulling your own numbers",
+      "kind": "must"
+    },
+    {
+      "key": "pricing",
+      "text": "Pricing and packaging experience",
+      "kind": "nice"
+    },
+    {
+      "key": "plg",
+      "text": "PLG motions",
+      "kind": "nice"
+    }
+  ],
+  "expected_status": {
+    "years": "strong",
+    "metrics": "strong",
+    "discovery": "strong",
+    "specs": "partial",
+    "data": "strong",
+    "pricing": "strong",
+    "plg": "missing"
+  }
+}

@@ -1,0 +1,92 @@
+.appbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  padding-top: calc(var(--space-3) + var(--safe-top));
+  padding-left: calc(var(--space-4) + var(--safe-left));
+  padding-right: calc(var(--space-4) + var(--safe-right));
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+}
+
+.appbar__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+/* The brand mark is a highlighter stroke — the one yellow in the chrome.
+   It uses the solid colour, not `--marker-fill`: the translucency exists so
+   text stays readable *through* a mark, and nothing reads through this one. */
+.appbar__mark {
+  width: 18px;
+  height: 10px;
+  border-radius: 1px;
+  background: var(--marker);
+}
+
+.appbar__name {
+  font-size: var(--size-s);
+}
+
+.appbar__nav {
+  display: flex;
+  gap: var(--space-1);
+  margin-inline-start: var(--space-4);
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.appbar__nav::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-tab) var(--radius-tab) 0 0;
+  color: var(--graphite);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: var(--ink);
+}
+
+.tab--current {
+  background: var(--tab);
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.appbar__action {
+  flex: none;
+}
+
+@media (max-width: 559px) {
+  .appbar {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  /* `flex: 1` from the base rule sets flex-basis to 0, which beats `width`
+     and keeps the tabs on the first line where they get clipped. */
+  .appbar__nav {
+    order: 3;
+    flex: 0 0 100%;
+    margin-inline-start: 0;
+  }
+
+  .appbar__action {
+    margin-inline-start: auto;
+  }
+}

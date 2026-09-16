@@ -1,0 +1,54 @@
+{
+  "id": "tr-pazarlama",
+  "language": "tr",
+  "role": "Dijital Pazarlama Uzmanı",
+  "note": "Turkish: conversion-rate work must not be read as A/B testing.",
+  "cv": "Zeynep Arslan — Dijital Pazarlama Uzmanı\n\nDeneyim\nVira E-ticaret — Dijital Pazarlama Uzmanı, 2020-2025\nGoogle Ads ve Meta kampanyalarını yönettim, aylık 250.000 TL bütçe.\nDönüşüm oranını 6 ayda %1,8'den %2,6'ya çıkardım.\nE-posta otomasyonlarını Mailchimp üzerinde kurdum.\nGoogle Analytics raporlarını haftalık olarak ekiple paylaştım.\n\nEğitim\nİşletme lisans, İstanbul Üniversitesi, 2019\n\nBeceriler\nGoogle Ads, Meta Ads, Google Analytics, Mailchimp, Excel, SEO",
+  "posting": "Performans Pazarlama Uzmanı — Kuzey Dijital\n\nAranan nitelikler\n- En az 3 yıl performans pazarlama deneyimi\n- Google Ads ve Meta Ads yönetimi\n- Google Analytics ile raporlama\n- Bütçe yönetimi deneyimi\n- A/B testi kurgulama deneyimi\n\nTercih edilen\n- SEO bilgisi\n- E-ticaret sektörü deneyimi",
+  "expected_requirements": [
+    {
+      "key": "yil",
+      "text": "En az 3 yıl performans pazarlama",
+      "kind": "must"
+    },
+    {
+      "key": "ads",
+      "text": "Google Ads ve Meta Ads yönetimi",
+      "kind": "must"
+    },
+    {
+      "key": "ga",
+      "text": "Google Analytics ile raporlama",
+      "kind": "must"
+    },
+    {
+      "key": "butce",
+      "text": "Bütçe yönetimi",
+      "kind": "must"
+    },
+    {
+      "key": "ab",
+      "text": "A/B testi kurgulama",
+      "kind": "must"
+    },
+    {
+      "key": "seo",
+      "text": "SEO bilgisi",
+      "kind": "nice"
+    },
+    {
+      "key": "eticaret",
+      "text": "E-ticaret deneyimi",
+      "kind": "nice"
+    }
+  ],
+  "expected_status": {
+    "yil": "strong",
+    "ads": "strong",
+    "ga": "strong",
+    "butce": "strong",
+    "ab": "missing",
+    "seo": "strong",
+    "eticaret": "strong"
+  }
+}

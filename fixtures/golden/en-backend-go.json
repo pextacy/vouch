@@ -1,0 +1,54 @@
+{
+  "id": "en-backend-go",
+  "language": "en",
+  "role": "Senior Backend Engineer",
+  "note": "Dense match; Kafka is the only real gap.",
+  "cv": "Dilek Aydin — Backend Engineer, Istanbul\n\nExperience\nAcme Payments — Backend Engineer, 2018-2024\nBuilt payment reconciliation services in Go for 1,200 merchant accounts.\nMigrated the reporting pipeline from MySQL to PostgreSQL with zero downtime.\nRan the settlement workers on Kubernetes across two regions.\nLed a team of 4 engineers and ran the on-call rotation.\nReduced settlement errors by 18% across the ledger.\n\nEducation\nMSc Computer Science, Bogazici University, 2016\n\nSkills\nGo, Python, PostgreSQL, Kubernetes, Docker, gRPC, Redis",
+  "posting": "Senior Backend Engineer — Northwind Ledger (Remote, EU)\n\nRequirements\n- 5+ years of backend engineering experience\n- Strong production experience with Go\n- Experience running services on Kubernetes\n- Working knowledge of PostgreSQL and schema migrations\n- Experience leading a small team\n\nNice to have\n- Payments or fintech domain experience\n- Familiarity with Kafka\n\nBenefits: private health insurance, 30 days paid leave.",
+  "expected_requirements": [
+    {
+      "key": "years",
+      "text": "5+ years of backend engineering",
+      "kind": "must"
+    },
+    {
+      "key": "go",
+      "text": "Production experience with Go",
+      "kind": "must"
+    },
+    {
+      "key": "k8s",
+      "text": "Running services on Kubernetes",
+      "kind": "must"
+    },
+    {
+      "key": "postgres",
+      "text": "PostgreSQL and schema migrations",
+      "kind": "must"
+    },
+    {
+      "key": "lead",
+      "text": "Leading a small team",
+      "kind": "must"
+    },
+    {
+      "key": "payments",
+      "text": "Payments or fintech domain",
+      "kind": "nice"
+    },
+    {
+      "key": "kafka",
+      "text": "Familiarity with Kafka",
+      "kind": "nice"
+    }
+  ],
+  "expected_status": {
+    "years": "strong",
+    "go": "strong",
+    "k8s": "strong",
+    "postgres": "strong",
+    "lead": "strong",
+    "payments": "strong",
+    "kafka": "missing"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "schema": 2,
+  "permissions": ["tools.invoke", "storage.read", "storage.write", "ui.svg"],
+  "host_capabilities": ["llm.sample", "aps.kv", "aps.files", "web.fetch"],
+  "required_executas": [
+    { "tool_id": "bundled:receipts-engine", "min_version": "1.0.0", "version": "latest" },
+    { "tool_id": "bundled:receipts-coach", "version": "latest" }
+  ],
+  "optional_executas": [],
+  "system_prompt_addendum": "The user has Receipts open. Receipts checks a job posting against the user's saved CV and only writes claims the CV can prove. When the user pastes or links a job posting and wants it checked, tailored, or turned into a cover letter, open the window with open_app_view('main', payload={posting_text}) instead of answering in chat — chat output is not verified against the CV, the app's output is. Never invent experience, metrics, tools or employers on the user's behalf; if the CV cannot support a claim, say so plainly and suggest how to prepare for the gap.",
+  "tags": ["career", "cv", "resume", "job-search", "cover-letter", "ats"],
+  "ui": {
+    "form_factors": ["desktop", "mobile"],
+    "bundle": {
+      "format": "static-spa",
+      "entry": "index.html",
+      "external_origins": []
+    },
+    "views": [
+      {
+        "name": "main",
+        "title": "Receipts",
+        "default": true,
+        "entry": "index.html",
+        "icon": "icon.svg",
+        "min_size": { "w": 360, "h": 560 },
+        "default_size": { "w": 960, "h": 720 },
+        "max_size": { "w": 1440, "h": 1100 },
+        "resizable": true,
+        "movable": true,
+        "single_instance": true,
+        "summary_template": "Match for {role} at {company}"
+      }
+    ],
+    "host_api": {
+      "tools": ["required:bundled:receipts-engine"],
+      "storage": ["get", "set", "delete", "list"],
+      "files": ["upload_init", "upload_finalize", "download"],
+      "web": ["fetch"],
+      "window": ["set_title"]
+    },
+    "csp_overrides": {
+      "img-src": ["'self'", "data:"],
+      "font-src": ["'self'"],
+      "style-src": ["'self'"],
+      "script-src": ["'self'"]
+    },
+    "state_merge": "last_writer_wins"
+  },
+  "dev": {
+    "fixtures": ["fixtures/*.jsonl"],
+    "seed_storage": {},
+    "user_id": 1
+  }
+}

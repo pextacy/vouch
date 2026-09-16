@@ -1,0 +1,48 @@
+{
+  "id": "en-newgrad",
+  "language": "en",
+  "role": "Junior Software Engineer",
+  "note": "Thin CV: checks that 'willingness to learn' stays partial, not strong.",
+  "cv": "Tom Becker\n\nEducation\nBSc Computer Science, TU Delft, 2022-2026\nThesis on graph partitioning, graded 8.5/10.\n\nProjects\nBuilt a course-scheduling web app in Python and Flask for the student union.\nWrote a small Redis-backed rate limiter as a side project.\n\nExperience\nSummer intern, Kestrel Software, 2025\nFixed bugs in an internal Django admin and added unit tests.\n\nSkills\nPython, Flask, Django, SQL, Git",
+  "posting": "Junior Software Engineer — Kite Systems\n\nRequirements\n- A degree in computer science or equivalent practical experience\n- Familiarity with Python\n- Willingness to learn our stack (Go, Kubernetes)\n- Some exposure to relational databases\n\nNice to have\n- Open-source contributions\n- Internship experience",
+  "expected_requirements": [
+    {
+      "key": "degree",
+      "text": "Degree in computer science",
+      "kind": "must"
+    },
+    {
+      "key": "python",
+      "text": "Familiarity with Python",
+      "kind": "must"
+    },
+    {
+      "key": "learn",
+      "text": "Willingness to learn Go and Kubernetes",
+      "kind": "must"
+    },
+    {
+      "key": "db",
+      "text": "Exposure to relational databases",
+      "kind": "must"
+    },
+    {
+      "key": "oss",
+      "text": "Open-source contributions",
+      "kind": "nice"
+    },
+    {
+      "key": "intern",
+      "text": "Internship experience",
+      "kind": "nice"
+    }
+  ],
+  "expected_status": {
+    "degree": "strong",
+    "python": "strong",
+    "learn": "partial",
+    "db": "strong",
+    "oss": "missing",
+    "intern": "strong"
+  }
+}

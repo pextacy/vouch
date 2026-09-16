@@ -1,0 +1,54 @@
+{
+  "id": "tr-veri",
+  "language": "tr",
+  "role": "Veri Analisti",
+  "note": "Turkish: logistics is not retail — domain must stay missing.",
+  "cv": "Burak Şahin — Veri Analisti\n\nDeneyim\nEge Lojistik — Veri Analisti, 2021-2025\nSQL ile sevkiyat verilerini modelledim ve Power BI panoları hazırladım.\nPython ile rota gecikmelerini tahmin eden bir model prototipi yazdım.\nOperasyon ekibine aylık performans sunumları yaptım.\nVeri kalitesi kontrollerini otomatikleştirdim.\n\nEğitim\nEndüstri Mühendisliği lisans, Boğaziçi Üniversitesi, 2020\n\nBeceriler\nSQL, Python, pandas, Power BI, Excel",
+  "posting": "Veri Analisti — Deniz Perakende\n\nAranan nitelikler\n- İleri düzey SQL\n- Power BI veya Tableau ile raporlama\n- Python ile veri analizi\n- İş birimlerine sunum yapma deneyimi\n- 2+ yıl analitik deneyimi\n\nTercih edilen\n- Perakende sektörü deneyimi\n- dbt veya benzeri bir dönüşüm aracı",
+  "expected_requirements": [
+    {
+      "key": "sql",
+      "text": "İleri düzey SQL",
+      "kind": "must"
+    },
+    {
+      "key": "bi",
+      "text": "Power BI veya Tableau raporlama",
+      "kind": "must"
+    },
+    {
+      "key": "python",
+      "text": "Python ile veri analizi",
+      "kind": "must"
+    },
+    {
+      "key": "sunum",
+      "text": "İş birimlerine sunum",
+      "kind": "must"
+    },
+    {
+      "key": "yil",
+      "text": "2+ yıl analitik deneyimi",
+      "kind": "must"
+    },
+    {
+      "key": "perakende",
+      "text": "Perakende sektörü",
+      "kind": "nice"
+    },
+    {
+      "key": "dbt",
+      "text": "dbt veya benzeri dönüşüm aracı",
+      "kind": "nice"
+    }
+  ],
+  "expected_status": {
+    "sql": "strong",
+    "bi": "strong",
+    "python": "strong",
+    "sunum": "strong",
+    "yil": "strong",
+    "perakende": "missing",
+    "dbt": "missing"
+  }
+}

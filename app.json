@@ -1,0 +1,18 @@
+{
+  "slug": "receipts",
+  "name": "Receipts",
+  "version": "1.0.0",
+  "tagline": "Tailor every application. Invent nothing.",
+  "description": "Paste a job posting. Receipts checks each requirement against your real CV, shows you the evidence, and writes tailored bullets and a cover letter that use only facts you already have.\n\n**How it works**\n\n1. Add your CV once — PDF, DOCX or pasted text. It is split into numbered lines and saved in your Anna storage.\n2. Paste a job posting. Receipts pulls out every stated requirement and marks it as evidenced, related, or no evidence yet — each one citing the CV lines that back it.\n3. Ask for tailored bullets or a cover letter. Every sentence is checked by a deterministic verifier before you see it; anything the verifier cannot trace back to your CV is dropped, not softened.\n\n**Why it is different**\n\nMost AI resume tools improve a CV by inventing experience — metrics you never hit, tools you never used. That surfaces in interviews. Receipts refuses: a number, tool, employer or job title that is not in your CV never reaches the page. You see the gaps honestly, and what to prepare for.\n\n**Your data**\n\nYour CV lives only in your Anna account storage. No external services. Delete everything in one step from Your data.",
+  "category": "productivity",
+  "keywords": ["CV", "resume", "job application", "cover letter", "ATS", "job match", "career"],
+  "homepage_url": "https://github.com/receipts-app/receipts",
+  "support_url": "https://github.com/receipts-app/receipts/issues",
+  "privacy_url": "https://github.com/receipts-app/receipts#privacy",
+
+  "_comment_bundled_executas": "Handles resolved by `anna-app dev` and `anna-app apps publish`: each path is scanned for executa.json, the minted tool_id replaces every `bundled:<handle>` reference in manifest.json (in memory — the file on disk is untouched), and bundle/anna-tool-ids.js is written so the UI reads the same ids.",
+  "bundled_executas": {
+    "receipts-engine": { "path": "./executas/receipts-engine" },
+    "receipts-coach": { "path": "./executas/receipts-coach" }
+  }
+}

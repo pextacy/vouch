@@ -1,0 +1,29 @@
+{
+  "name": "receipts",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Receipts — tailor every application, invent nothing. An Anna App that checks a job posting against your CV line by line.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "anna-app dev",
+    "dev:ui": "pnpm --dir ui dev",
+    "build": "pnpm --dir ui build",
+    "typecheck": "pnpm --dir ui typecheck",
+    "validate": "pnpm build && anna-app validate --strict",
+    "doctor": "anna-app doctor",
+    "test": "vitest run",
+    "test:ui": "vitest run",
+    "test:engine": "cd executas/receipts-engine && uv run --extra dev pytest ../../tests -q",
+    "lint:engine": "cd executas/receipts-engine && uv run --extra dev ruff check . && uv run --extra dev mypy receipts_engine",
+    "eval": "cd executas/receipts-engine && uv run --extra dev python ../../scripts/eval_match.py ../../fixtures/golden",
+    "fixture:verify": "anna-app fixture verify fixtures/*.jsonl",
+    "fixture:summarize": "anna-app fixture summarize fixtures/happy-path.jsonl",
+    "check": "pnpm typecheck && pnpm test && pnpm test:engine && pnpm validate"
+  },
+  "devDependencies": {
+    "@anna-ai/cli": "^0.1.52",
+    "playwright-core": "^1.63.0",
+    "vitest": "^2.1.9"
+  }
+}

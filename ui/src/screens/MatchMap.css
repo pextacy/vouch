@@ -1,0 +1,83 @@
+.map__head {
+  max-width: var(--measure);
+}
+
+.map {
+  display: grid;
+  gap: var(--space-6);
+  min-height: 0;
+}
+
+.map__group {
+  font-size: var(--size-s);
+  font-weight: 500;
+  color: var(--graphite);
+}
+
+.map__nice {
+  margin-top: var(--space-6);
+}
+
+.map__cv {
+  min-height: 0;
+}
+
+.map__actions {
+  position: sticky;
+  bottom: 0;
+  gap: var(--space-2);
+  padding: var(--space-3) 0;
+  padding-bottom: calc(var(--space-3) + var(--safe-bottom));
+  background: var(--paper);
+  border-top: 1px solid var(--rule);
+}
+
+.map__tabs {
+  display: flex;
+  gap: var(--space-1);
+  border-bottom: 1px solid var(--rule);
+}
+
+.map__tabs .tab {
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Phone: one pane at a time, chosen by the tabs. */
+@media (max-width: 899px) {
+  .map[data-pane="requirements"] .map__cv,
+  .map[data-pane="cv"] .map__requirements {
+    display: none;
+  }
+
+  .map__cv {
+    max-height: 60vh;
+  }
+}
+
+/* Desktop: both panes side by side, and the tabs become redundant. */
+@media (min-width: 900px) {
+  .map__tabs {
+    display: none;
+  }
+
+  .map {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .map__cv {
+    position: sticky;
+    top: var(--space-4);
+    max-height: calc(100vh - 16rem);
+    display: flex;
+  }
+
+  .map__cv > .sheet {
+    flex: 1;
+    min-height: 0;
+  }
+}
+

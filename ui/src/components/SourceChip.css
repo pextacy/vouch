@@ -1,0 +1,22 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px var(--space-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-input);
+  background: var(--sheet);
+  color: var(--graphite);
+  font-size: var(--size-xs);
+  font-family: var(--font-ui);
+  line-height: 1.6;
+}
+
+.chip--button {
+  cursor: pointer;
+  min-height: 24px;
+}
+
+.chip--button:hover {
+  border-color: var(--pencil);
+  color: var(--pencil);
+}

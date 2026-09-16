@@ -1,0 +1,20 @@
+{
+  "slug": "receipts-engine",
+  "name": "Receipts Engine",
+  "version": "1.0.0",
+  "executa_type": "tool",
+  "description": "Parses a CV into numbered lines, extracts the requirements from a job posting, matches each requirement to the CV lines that evidence it, and rewrites bullets and cover letters that a deterministic verifier has proved are grounded in the CV.",
+
+  "tool_id": "tool-dev-receipts-engine",
+  "type": "python",
+  "enabled": true,
+
+  "distribution": {
+    "active": "local",
+    "profiles": {
+      "local": { "type": "local", "supports_protocol": true }
+    }
+  },
+
+  "_comment": "`tool_id` here is the local-dev id: `anna-app dev` spawns `uv run --project . <tool_id>`, so it must equal a [project.scripts] key in pyproject.toml. At publish time `anna-app apps publish` mints the real id and substitutes every `bundled:receipts-engine` reference; run `python scripts/set-tool-id.py apply --tool <minted>` only if you pin an id by hand. `scripts/set-tool-id.py status` checks that this file, pyproject.toml and the UI agree."
+}

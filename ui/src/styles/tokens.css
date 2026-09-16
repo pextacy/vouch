@@ -1,0 +1,111 @@
+/* Design tokens — docs.md §8.
+ *
+ * The direction is a recruiter's desk: cool blue-grey paper, navy ink, pencil
+ * blue for interaction, and exactly one bold thing — the highlighter mark that
+ * shows where the evidence is. Yellow appears nowhere else in the interface,
+ * which is what makes it read as "here is the proof" instead of decoration.
+ *
+ * Nothing in this app may use a colour, size or spacing value that is not a
+ * token here. */
+
+:root {
+  /* — colour — */
+  --paper: #f5f7fa;
+  --sheet: #ffffff;
+  --ink: #1c2a44;
+  --graphite: #5a6478;
+  --rule: #d8dee8;
+  --marker: #f4ea3a;
+  --marker-fill: var(--marker);
+  --pencil: #2f55d4;
+  --pencil-soft: #eaeffb;
+  --tab: #e4e9f1;
+
+  /* — type — */
+  --font-ui: "Schibsted Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-doc: "Source Serif 4", Georgia, "Times New Roman", serif;
+
+  --size-xs: 0.8125rem;  /* 13 */
+  --size-s: 1rem;        /* 16 */
+  --size-m: 1.1875rem;   /* 19 */
+  --size-l: 1.4375rem;   /* 23 */
+  --size-xl: 1.75rem;    /* 28 */
+  --size-xxl: 2.0625rem; /* 33 */
+
+  --leading-ui: 1.5;
+  --leading-doc: 1.6;
+  --measure: 68ch;
+
+  /* — 4px spacing grid — */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  /* — shape: a hierarchy, not one radius everywhere — */
+  --radius-sheet: 2px;
+  --radius-input: 6px;
+  --radius-button: 8px;
+  --radius-tab: 10px;
+
+  /* — depth: only document sheets are lifted — */
+  --shadow-sheet: 0 1px 0 var(--rule), 0 8px 24px -16px rgba(28, 42, 68, 0.35);
+
+  /* — motion — */
+  --sweep-duration: 420ms;
+  --sweep-stagger: 90ms;
+  --sweep-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --panel-duration: 160ms;
+  --swap-duration: 200ms;
+
+  /* — the mobile shell injects these; they are 0 on desktop — */
+  --safe-top: var(--anna-safe-area-top, env(safe-area-inset-top, 0px));
+  --safe-bottom: var(--anna-safe-area-bottom, env(safe-area-inset-bottom, 0px));
+  --safe-left: var(--anna-safe-area-left, env(safe-area-inset-left, 0px));
+  --safe-right: var(--anna-safe-area-right, env(safe-area-inset-right, 0px));
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #1b2230;
+    --sheet: #232c3d;
+    --ink: #e6eaf2;
+    --graphite: #a3acbd;
+    --rule: #344058;
+    /* Translucent in the dark so light text stays readable through the mark. */
+    --marker-fill: rgb(244 234 58 / 38%);
+    --pencil: #8ea6ff;
+    --pencil-soft: #2a3450;
+    --tab: #2b3549;
+  }
+}
+
+/* An explicit choice always wins over the system preference. */
+:root[data-theme="light"] {
+  --paper: #f5f7fa;
+  --sheet: #ffffff;
+  --ink: #1c2a44;
+  --graphite: #5a6478;
+  --rule: #d8dee8;
+  --marker-fill: var(--marker);
+  --pencil: #2f55d4;
+  --pencil-soft: #eaeffb;
+  --tab: #e4e9f1;
+}
+
+:root[data-theme="dark"] {
+  --paper: #1b2230;
+  --sheet: #232c3d;
+  --ink: #e6eaf2;
+  --graphite: #a3acbd;
+  --rule: #344058;
+  --marker-fill: rgb(244 234 58 / 38%);
+  --pencil: #8ea6ff;
+  --pencil-soft: #2a3450;
+  --tab: #2b3549;
+}

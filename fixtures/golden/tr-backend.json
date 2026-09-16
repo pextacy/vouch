@@ -1,0 +1,54 @@
+{
+  "id": "tr-backend",
+  "language": "tr",
+  "role": "Yazılım Mühendisi",
+  "note": "Turkish: Kubernetes is the must-have gap.",
+  "cv": "Emre Kılıç — Yazılım Mühendisi, Ankara\n\nDeneyim\nMarmara Teknoloji — Yazılım Mühendisi, 2019-2025\nJava ve Spring Boot ile sipariş yönetim servislerini geliştirdim.\nVeritabanı olarak PostgreSQL kullandım ve şema geçişlerini yönettim.\nServisleri Docker ile paketleyip Jenkins üzerinden dağıttım.\n3 kişilik ekibe teknik olarak liderlik ettim.\n\nEğitim\nBilgisayar Mühendisliği lisans, ODTÜ, 2018\n\nBeceriler\nJava, Spring Boot, PostgreSQL, Docker, Jenkins, Git",
+  "posting": "Kıdemli Backend Geliştirici — Anadolu Yazılım\n\nAranan nitelikler\n- En az 5 yıl backend geliştirme deneyimi\n- Java ve Spring Boot ile üretim deneyimi\n- İlişkisel veritabanlarında yetkinlik\n- CI/CD süreçlerine hakimiyet\n- Kubernetes üzerinde servis işletme deneyimi\n\nTercih edilen\n- Mikroservis mimarisi deneyimi\n- Kafka bilgisi",
+  "expected_requirements": [
+    {
+      "key": "yil",
+      "text": "En az 5 yıl backend deneyimi",
+      "kind": "must"
+    },
+    {
+      "key": "java",
+      "text": "Java ve Spring Boot üretim deneyimi",
+      "kind": "must"
+    },
+    {
+      "key": "db",
+      "text": "İlişkisel veritabanı yetkinliği",
+      "kind": "must"
+    },
+    {
+      "key": "cicd",
+      "text": "CI/CD süreçlerine hakimiyet",
+      "kind": "must"
+    },
+    {
+      "key": "k8s",
+      "text": "Kubernetes ile servis işletme",
+      "kind": "must"
+    },
+    {
+      "key": "mikro",
+      "text": "Mikroservis mimarisi",
+      "kind": "nice"
+    },
+    {
+      "key": "kafka",
+      "text": "Kafka bilgisi",
+      "kind": "nice"
+    }
+  ],
+  "expected_status": {
+    "yil": "strong",
+    "java": "strong",
+    "db": "strong",
+    "cicd": "strong",
+    "k8s": "missing",
+    "mikro": "partial",
+    "kafka": "missing"
+  }
+}

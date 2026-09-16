@@ -1,0 +1,8 @@
+.posting {
+  min-height: 260px;
+}
+
+.posting__url {
+  flex: 1;
+  min-width: 14rem;
+}

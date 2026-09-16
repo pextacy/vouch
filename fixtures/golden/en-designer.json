@@ -1,0 +1,54 @@
+{
+  "id": "en-designer",
+  "language": "en",
+  "role": "Product Designer",
+  "note": "Banking counts as regulated; motion design is absent.",
+  "cv": "Ines Duarte — Product Designer\n\nExperience\nKestrel Bank — Product Designer, 2019-2025\nRedesigned the mobile transfer flow; support tickets about transfers fell by a quarter.\nBuilt and maintained the design system in Figma with 90 components.\nRan moderated usability sessions with 8 participants per release.\nPaired with engineers on accessibility fixes to reach WCAG AA.\n\nEducation\nBA Communication Design, Universidade do Porto, 2018\n\nSkills\nFigma, prototyping, design systems, usability testing, accessibility",
+  "posting": "Product Designer — Horizon Labs\n\nRequirements\n- Strong portfolio of shipped product work\n- Experience owning a design system\n- Comfortable running usability research\n- Fluency in Figma\n- Experience designing for accessibility\n\nNice to have\n- Motion design\n- Experience in regulated industries",
+  "expected_requirements": [
+    {
+      "key": "portfolio",
+      "text": "Portfolio of shipped product work",
+      "kind": "must"
+    },
+    {
+      "key": "ds",
+      "text": "Owning a design system",
+      "kind": "must"
+    },
+    {
+      "key": "research",
+      "text": "Running usability research",
+      "kind": "must"
+    },
+    {
+      "key": "figma",
+      "text": "Fluency in Figma",
+      "kind": "must"
+    },
+    {
+      "key": "a11y",
+      "text": "Designing for accessibility",
+      "kind": "must"
+    },
+    {
+      "key": "motion",
+      "text": "Motion design",
+      "kind": "nice"
+    },
+    {
+      "key": "regulated",
+      "text": "Regulated industries",
+      "kind": "nice"
+    }
+  ],
+  "expected_status": {
+    "portfolio": "strong",
+    "ds": "strong",
+    "research": "strong",
+    "figma": "strong",
+    "a11y": "strong",
+    "motion": "missing",
+    "regulated": "strong"
+  }
+}

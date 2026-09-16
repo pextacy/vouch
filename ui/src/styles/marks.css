@@ -1,0 +1,90 @@
+/* The highlighter — the one bold element in the interface.
+ *
+ * Three states, each distinguished by shape and text as well as colour, so the
+ * meaning survives a greyscale screenshot and a colour-blind reader:
+ *
+ *   strong   full mark across the quote          "Evidenced"
+ *   partial  3px underline beneath the quote     "Related"
+ *   missing  the requirement inside brackets     "No evidence yet"
+ *
+ * The sweep is the only automatic entrance animation in the app. It runs once,
+ * when evidence actually arrives for a requirement — so it reads as the app
+ * finding something, not as decoration. */
+
+.mark {
+  position: relative;
+  display: inline;
+  padding: 0 0.15em;
+  color: var(--ink);
+  background-image: linear-gradient(var(--marker-fill), var(--marker-fill));
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: 100% 100%;
+}
+
+.mark--partial {
+  padding: 0;
+  background-size: 100% 3px;
+  background-position: 0 100%;
+}
+
+/* A missing requirement is bracketed rather than badged: no red, no icon, no
+ * alarm — it is a thing to prepare for. */
+.mark--missing {
+  color: var(--graphite);
+  background: none;
+  padding: 0;
+}
+
+.mark--missing::before {
+  content: "[ ";
+}
+
+.mark--missing::after {
+  content: " ]";
+}
+
+/* The sweep: clip-path from 0 to 100% width, staggered per requirement. */
+.mark--sweep {
+  animation: marker-sweep var(--sweep-duration) var(--sweep-ease) both;
+  animation-delay: calc(var(--sweep-index, 0) * var(--sweep-stagger));
+}
+
+@keyframes marker-sweep {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* — status label: colour is never the only signal — */
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--size-xs);
+  font-weight: 500;
+  color: var(--graphite);
+  white-space: nowrap;
+}
+
+.status__glyph {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--ink);
+}
+
+.status--missing .status__glyph {
+  color: var(--graphite);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mark--sweep {
+    animation: none;
+    clip-path: none;
+  }
+}

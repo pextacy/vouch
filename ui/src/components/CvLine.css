@@ -1,0 +1,25 @@
+.cvline {
+  display: grid;
+  grid-template-columns: 3.25rem 1fr;
+  gap: var(--space-3);
+  padding: var(--space-1) 0;
+  max-width: none;
+  scroll-margin-block: var(--space-6);
+}
+
+.cvline--current {
+  background: var(--pencil-soft);
+  border-radius: var(--radius-sheet);
+}
+
+.cvline__id {
+  font-family: var(--font-ui);
+  font-size: var(--size-xs);
+  color: var(--graphite);
+  padding-top: 0.2em;
+  user-select: none;
+}
+
+.cvline__text {
+  min-width: 0;
+}

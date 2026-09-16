@@ -1,0 +1,54 @@
+{
+  "id": "en-frontend-react",
+  "language": "en",
+  "role": "Frontend Engineer",
+  "note": "Next.js is the must-have gap; design system is a partial via component library.",
+  "cv": "Marco Rossi — Frontend Engineer\n\nExperience\nBluewave Retail — Frontend Engineer, 2020-2025\nRebuilt the checkout flow in React and TypeScript.\nCut the main bundle from 480 KB to 210 KB by code splitting with Vite.\nSet up component testing with Jest and Testing Library.\nWorked with designers on an accessible component library (WCAG 2.1 AA).\n\nEducation\nBSc Software Engineering, Politecnico di Milano, 2019\n\nSkills\nReact, TypeScript, Vite, Jest, CSS, Figma",
+  "posting": "Frontend Engineer — Halyard Commerce\n\nWhat we need\n- 3+ years building production React applications\n- Strong TypeScript\n- Experience with accessibility standards (WCAG)\n- Comfortable owning performance work\n- Experience with Next.js server-side rendering\n\nNice to have\n- Design system experience\n- GraphQL",
+  "expected_requirements": [
+    {
+      "key": "react",
+      "text": "3+ years of production React",
+      "kind": "must"
+    },
+    {
+      "key": "ts",
+      "text": "Strong TypeScript",
+      "kind": "must"
+    },
+    {
+      "key": "a11y",
+      "text": "Accessibility standards (WCAG)",
+      "kind": "must"
+    },
+    {
+      "key": "perf",
+      "text": "Owning performance work",
+      "kind": "must"
+    },
+    {
+      "key": "next",
+      "text": "Next.js server-side rendering",
+      "kind": "must"
+    },
+    {
+      "key": "ds",
+      "text": "Design system experience",
+      "kind": "nice"
+    },
+    {
+      "key": "graphql",
+      "text": "GraphQL",
+      "kind": "nice"
+    }
+  ],
+  "expected_status": {
+    "react": "strong",
+    "ts": "strong",
+    "a11y": "strong",
+    "perf": "strong",
+    "next": "missing",
+    "ds": "partial",
+    "graphql": "missing"
+  }
+}

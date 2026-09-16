@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Receipts">
+  <title>Receipts</title>
+  <!-- Cool paper square: the app's ground, not a generic rounded tile. -->
+  <rect width="64" height="64" rx="8" fill="#F5F7FA"/>
+  <!-- The highlighter stroke — the one bold element, laid across the line. -->
+  <rect x="10" y="27" width="44" height="13" rx="1" fill="#F4EA3A"/>
+  <!-- A short bracketed line: the shape a requirement takes before it has
+       evidence. The mark crossing it is the moment it gets some. -->
+  <g fill="none" stroke="#1C2A44" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 22v20"/>
+    <path d="M18 22h5M18 42h5"/>
+    <path d="M46 22v20"/>
+    <path d="M46 22h-5M46 42h-5"/>
+    <path d="M26 32h12"/>
+  </g>
+  <!-- Two pencil rules above and below: notes on a page. -->
+  <g stroke="#5A6478" stroke-width="2.5" stroke-linecap="round">
+    <path d="M14 16h28"/>
+    <path d="M14 51h20"/>
+  </g>
+</svg>

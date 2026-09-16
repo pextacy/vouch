@@ -1,0 +1,14 @@
+{
+  "slug": "receipts-coach",
+  "name": "Receipts Coach",
+  "version": "1.0.0",
+  "executa_type": "skill",
+  "description": "Tells Anna when to open the Receipts window instead of answering in chat, and how to talk about CV gaps honestly. Declarative skill defined in SKILL.md.",
+
+  "tool_id": "skill-dev-receipts-coach",
+  "type": "binary",
+  "enabled": true,
+  "command": ["node", "-e", "process.stdin.resume()"],
+
+  "_comment": "A Skill has no runtime process — the body of SKILL.md is loaded into the prompt. The `type`/`command` pair exists only so `anna-app dev` can DISCOVER this directory and resolve the `bundled:receipts-coach` reference in manifest.json; without it the harness exits with 'unresolved bundled handle'. The harness spawns an executa lazily, on the first tools.invoke for its tool_id, and nothing ever invokes a skill — if something did, it would get an idle process rather than a crash loop. `anna-app apps publish` reads executa_type and publishes this as a skill; the dev fields are ignored there. See docs/api-notes.md §9."
+}

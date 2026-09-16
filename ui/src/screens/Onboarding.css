@@ -1,0 +1,11 @@
+.promises {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: var(--measure);
+}
+
+.promises__item {
+  padding-inline-start: var(--space-4);
+  border-inline-start: 3px solid var(--marker-fill);
+}

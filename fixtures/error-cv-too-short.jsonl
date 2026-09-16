@@ -1,0 +1,5 @@
+{"kind": "meta", "t": 0, "slug": "receipts", "app": "Receipts", "recorded": "2026-09-16T12:00:00Z", "note": "A pasted CV with almost no text: cv_too_short, and the paste box stays."}
+{"kind": "req", "t": 10, "id": 1, "ns": "window", "method": "hello", "args": {}}
+{"kind": "res", "t": 30, "id": 1, "ok": true, "result": {"window_uuid": "w-2", "capabilities": {}}}
+{"kind": "req", "t": 900, "id": 2, "ns": "tools", "method": "invoke", "args": {"tool_id": "tool-dev-receipts-engine", "method": "engine", "args": {"action": "parse_cv", "source": "text", "text": "Dilek Aydın"}, "timeoutMs": 60000}}
+{"kind": "res", "t": 920, "id": 2, "ok": false, "error": {"code": "tool_failed", "message": "cv_too_short", "details": {}}}

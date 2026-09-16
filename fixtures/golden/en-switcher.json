@@ -1,0 +1,54 @@
+{
+  "id": "en-switcher",
+  "language": "en",
+  "role": "Solutions Engineer",
+  "note": "Career switcher: transferable evidence must land as partial, not strong.",
+  "cv": "Rachel Stone — Account Manager moving into technical work\n\nExperience\nFoxglove Media — Account Manager, 2018-2025\nManaged 30 enterprise accounts worth $4M in annual revenue.\nRan technical onboarding calls and wrote the integration guides customers used.\nBuilt internal reporting in SQL to replace a manual weekly export.\nHandled escalations with the engineering team during outages.\n\nEducation\nBA English Literature, University of Leeds, 2017\n\nCertifications\nAWS Certified Cloud Practitioner, 2024\n\nSkills\nSQL, Salesforce, technical writing, customer onboarding",
+  "posting": "Solutions Engineer — Anchorpoint\n\nRequirements\n- Customer-facing technical experience\n- Ability to explain an API to a non-technical buyer\n- SQL\n- Experience with cloud platforms\n- 3+ years in a customer-facing role\n\nNice to have\n- Scripting in Python\n- Pre-sales experience",
+  "expected_requirements": [
+    {
+      "key": "cf",
+      "text": "Customer-facing technical experience",
+      "kind": "must"
+    },
+    {
+      "key": "api",
+      "text": "Explaining an API to a non-technical buyer",
+      "kind": "must"
+    },
+    {
+      "key": "sql",
+      "text": "SQL",
+      "kind": "must"
+    },
+    {
+      "key": "cloud",
+      "text": "Experience with cloud platforms",
+      "kind": "must"
+    },
+    {
+      "key": "years",
+      "text": "3+ years customer-facing",
+      "kind": "must"
+    },
+    {
+      "key": "python",
+      "text": "Scripting in Python",
+      "kind": "nice"
+    },
+    {
+      "key": "presales",
+      "text": "Pre-sales experience",
+      "kind": "nice"
+    }
+  ],
+  "expected_status": {
+    "cf": "strong",
+    "api": "partial",
+    "sql": "strong",
+    "cloud": "partial",
+    "years": "strong",
+    "python": "missing",
+    "presales": "partial"
+  }
+}

@@ -1,0 +1,4 @@
+/* The paste field is the equal partner of the drop zone, not a footnote. */
+#cv-text {
+  min-height: 220px;
+}

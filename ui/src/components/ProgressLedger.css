@@ -1,0 +1,36 @@
+.ledger {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: var(--measure);
+}
+
+.ledger__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--graphite);
+}
+
+.ledger__dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid var(--rule);
+}
+
+.ledger__row--current {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.ledger__row--current .ledger__dot {
+  border-color: var(--ink);
+  background: var(--marker-fill);
+}
+
+.ledger__row--done .ledger__dot {
+  border-color: var(--ink);
+  background: var(--ink);
+}

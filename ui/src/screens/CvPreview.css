@@ -1,0 +1,43 @@
+.cvwarning {
+  max-width: var(--measure);
+  padding-inline-start: var(--space-3);
+  border-inline-start: 3px solid var(--marker-fill);
+  color: var(--graphite);
+}
+
+.cvrow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.cvrow__edit {
+  flex: none;
+  min-width: 44px;
+  opacity: 0;
+}
+
+/* The pencil is revealed on hover for pointers, but stays reachable by
+ * keyboard and always visible on touch, where there is no hover. */
+.cvrow:hover .cvrow__edit,
+.cvrow__edit:focus-visible {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .cvrow__edit {
+    opacity: 1;
+  }
+}
+
+.cvedit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+}
+
+.cvedit__field {
+  min-height: 84px;
+  font-family: var(--font-doc);
+}

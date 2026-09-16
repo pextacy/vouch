@@ -1,0 +1,14 @@
+.letterpara {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.letterpara__text {
+  max-width: var(--measure);
+}
+
+.letterpara__chips {
+  gap: var(--space-2);
+}

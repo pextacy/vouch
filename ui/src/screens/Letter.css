@@ -1,0 +1,6 @@
+.letter__warning {
+  max-width: var(--measure);
+  padding-inline-start: var(--space-3);
+  border-inline-start: 3px solid var(--marker-fill);
+  font-weight: 500;
+}

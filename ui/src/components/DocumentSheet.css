@@ -1,0 +1,35 @@
+.sheet {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--sheet);
+  border-radius: var(--radius-sheet);
+  box-shadow: var(--shadow-sheet);
+}
+
+.sheet__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  border-bottom: 1px solid var(--rule);
+}
+
+.sheet__title {
+  font-family: var(--font-ui);
+  font-size: var(--size-s);
+  font-weight: 500;
+  color: var(--graphite);
+}
+
+.sheet__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-4);
+  font-family: var(--font-doc);
+  font-size: var(--size-s);
+  line-height: var(--leading-doc);
+  font-optical-sizing: auto;
+}

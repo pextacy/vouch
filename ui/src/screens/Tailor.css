@@ -1,0 +1,4 @@
+/* Suggestions read as a document, not as a grid of cards. */
+.list .bullet:first-child {
+  padding-top: 0;
+}

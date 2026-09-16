@@ -1,0 +1,54 @@
+{
+  "id": "en-devops",
+  "language": "en",
+  "role": "Platform Engineer",
+  "note": "On-call is partial: the CV shows the stack and runbooks but never says on-call.",
+  "cv": "Sofia Lindqvist — Platform Engineer\n\nExperience\nArcwell — Platform Engineer, 2019-2025\nOwned the Terraform modules for 40 AWS accounts.\nCut CI build times from 22 to 7 minutes by caching layers in GitHub Actions.\nRan the Prometheus and Grafana stack and wrote the alert runbooks.\nMigrated batch jobs from EC2 to EKS.\n\nEducation\nBSc Information Technology, KTH, 2018\n\nSkills\nTerraform, AWS, Kubernetes, GitHub Actions, Prometheus, Grafana, Bash",
+  "posting": "Platform Engineer — Salt & Iron\n\nRequirements\n- Deep experience with Terraform\n- Production Kubernetes\n- AWS\n- CI/CD pipeline ownership\n- On-call experience with a monitoring stack\n\nNice to have\n- Go\n- FinOps / cost optimisation",
+  "expected_requirements": [
+    {
+      "key": "tf",
+      "text": "Deep experience with Terraform",
+      "kind": "must"
+    },
+    {
+      "key": "k8s",
+      "text": "Production Kubernetes",
+      "kind": "must"
+    },
+    {
+      "key": "aws",
+      "text": "AWS",
+      "kind": "must"
+    },
+    {
+      "key": "cicd",
+      "text": "CI/CD pipeline ownership",
+      "kind": "must"
+    },
+    {
+      "key": "oncall",
+      "text": "On-call with a monitoring stack",
+      "kind": "must"
+    },
+    {
+      "key": "go",
+      "text": "Go",
+      "kind": "nice"
+    },
+    {
+      "key": "finops",
+      "text": "FinOps / cost optimisation",
+      "kind": "nice"
+    }
+  ],
+  "expected_status": {
+    "tf": "strong",
+    "k8s": "strong",
+    "aws": "strong",
+    "cicd": "strong",
+    "oncall": "partial",
+    "go": "missing",
+    "finops": "missing"
+  }
+}

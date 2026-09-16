@@ -1,0 +1,48 @@
+{
+  "id": "en-qa",
+  "language": "en",
+  "role": "QA Engineer",
+  "note": "Defect reports are implied by triage, not stated; driver app is mobile-adjacent.",
+  "cv": "Hassan Malik — QA Engineer\n\nExperience\nPelican Logistics — QA Engineer, 2021-2025\nWrote the end-to-end suite in Playwright covering the driver app.\nSet up nightly regression runs in GitLab CI and triaged the failures.\nBuilt API contract tests with Postman collections and Newman.\nReduced escaped defects per release from 11 to 3.\n\nEducation\nBSc Computer Engineering, Lahore University, 2020\n\nSkills\nPlaywright, JavaScript, GitLab CI, Postman, SQL, Jira",
+  "posting": "QA Engineer — Brightline\n\nRequirements\n- Experience with browser automation (Playwright, Cypress or Selenium)\n- Comfortable working inside a CI pipeline\n- API testing experience\n- Able to write clear defect reports\n\nNice to have\n- Performance testing (k6 or JMeter)\n- Mobile test automation",
+  "expected_requirements": [
+    {
+      "key": "browser",
+      "text": "Browser automation experience",
+      "kind": "must"
+    },
+    {
+      "key": "ci",
+      "text": "Working inside a CI pipeline",
+      "kind": "must"
+    },
+    {
+      "key": "api",
+      "text": "API testing experience",
+      "kind": "must"
+    },
+    {
+      "key": "defects",
+      "text": "Writing clear defect reports",
+      "kind": "must"
+    },
+    {
+      "key": "perf",
+      "text": "Performance testing",
+      "kind": "nice"
+    },
+    {
+      "key": "mobile",
+      "text": "Mobile test automation",
+      "kind": "nice"
+    }
+  ],
+  "expected_status": {
+    "browser": "strong",
+    "ci": "strong",
+    "api": "strong",
+    "defects": "partial",
+    "perf": "missing",
+    "mobile": "partial"
+  }
+}

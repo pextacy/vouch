@@ -1,0 +1,54 @@
+{
+  "id": "en-data-analyst",
+  "language": "en",
+  "role": "Data Analyst",
+  "note": "Near-complete match; tests that a full match is not over-claimed.",
+  "cv": "Priya Nair — Data Analyst\n\nExperience\nLumen Health — Data Analyst, 2021-2025\nBuilt weekly patient-flow dashboards in Tableau for 9 clinics.\nWrote SQL models in dbt on Snowflake to replace hand-maintained spreadsheets.\nRan an A/B test on appointment reminders that cut no-shows by 12%.\nPresented findings to the clinical operations committee each month.\n\nEducation\nBA Economics, University of Manchester, 2020\n\nSkills\nSQL, Python, pandas, Tableau, dbt, Snowflake, Excel",
+  "posting": "Data Analyst — Fern & Co\n\nRequirements\n- Advanced SQL\n- Experience with a BI tool (Tableau, Looker or Power BI)\n- Experience designing and reading A/B tests\n- Comfortable presenting to non-technical stakeholders\n- 2+ years in an analytics role\n\nNice to have\n- Python for analysis\n- Experience in healthcare",
+  "expected_requirements": [
+    {
+      "key": "sql",
+      "text": "Advanced SQL",
+      "kind": "must"
+    },
+    {
+      "key": "bi",
+      "text": "Experience with a BI tool",
+      "kind": "must"
+    },
+    {
+      "key": "ab",
+      "text": "Designing and reading A/B tests",
+      "kind": "must"
+    },
+    {
+      "key": "present",
+      "text": "Presenting to non-technical stakeholders",
+      "kind": "must"
+    },
+    {
+      "key": "years",
+      "text": "2+ years in analytics",
+      "kind": "must"
+    },
+    {
+      "key": "python",
+      "text": "Python for analysis",
+      "kind": "nice"
+    },
+    {
+      "key": "health",
+      "text": "Healthcare experience",
+      "kind": "nice"
+    }
+  ],
+  "expected_status": {
+    "sql": "strong",
+    "bi": "strong",
+    "ab": "strong",
+    "present": "strong",
+    "years": "strong",
+    "python": "strong",
+    "health": "strong"
+  }
+}

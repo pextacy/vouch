@@ -1,0 +1,25 @@
+.dialog {
+  max-width: 28rem;
+  padding: var(--space-6);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-input);
+  background: var(--sheet);
+  color: var(--ink);
+}
+
+.dialog::backdrop {
+  background: rgb(28 42 68 / 45%);
+}
+
+.dialog__title {
+  margin-bottom: var(--space-2);
+}
+
+.dialog__body {
+  margin-bottom: var(--space-6);
+  color: var(--graphite);
+}
+
+.dialog__actions {
+  justify-content: flex-end;
+}

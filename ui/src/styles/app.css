@@ -1,0 +1,15 @@
+/* Shell layout: header, then one scrolling screen. */
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.boot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  color: var(--graphite);
+}
