@@ -14,6 +14,8 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
+  /* The home link is a tap target like any other; 24 px of it was not. */
+  min-height: 44px;
   color: var(--ink);
   text-decoration: none;
   font-weight: 700;

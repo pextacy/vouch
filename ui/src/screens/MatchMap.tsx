@@ -23,7 +23,7 @@ import {
   currentMatch,
   showingExample,
 } from "../state";
-import type { LineId, Status } from "../lib/types";
+import type { Evidence, LineId, RequirementId, Status } from "../lib/types";
 import "./MatchMap.css";
 
 type Pane = "requirements" | "cv";
@@ -53,6 +53,19 @@ export function MatchMap() {
   }
 
   const evidenceFor = new Map(match.evidence.map((item) => [item.requirement_id, item]));
+
+  /**
+   * Evidence for a requirement, or an honest "no evidence yet".
+   *
+   * `run_match` guarantees one entry per requirement, but this screen also
+   * renders records written by earlier versions and read back from storage.
+   * A missing entry means nothing was proven, which is exactly `missing`.
+   */
+  function evidenceOf(id: RequirementId): Evidence {
+    return (
+      evidenceFor.get(id) ?? { requirement_id: id, status: "missing", line_ids: [], why: "" }
+    );
+  }
   const statusByLine = new Map<string, Status>();
   for (const item of match.evidence) {
     for (const line of item.line_ids) {
@@ -73,7 +86,10 @@ export function MatchMap() {
     // Let the pane switch paint before scrolling to the line inside it.
     requestAnimationFrame(() => {
       const target = sheetRef.current?.querySelector(`#cv-${line}`);
-      target?.scrollIntoView({ block: "center", behavior: "smooth" });
+      // The JS argument overrides `scroll-behavior` from CSS, so the reduced
+      // motion preference has to be read here too.
+      const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+      target?.scrollIntoView({ block: "center", behavior: reduced ? "auto" : "smooth" });
     });
   }
 
@@ -109,6 +125,8 @@ export function MatchMap() {
           type="button"
           role="tab"
           aria-selected={pane === "requirements"}
+          aria-controls="map-requirements"
+          id="map-tab-requirements"
           class={`tab${pane === "requirements" ? " tab--current" : ""}`}
           onClick={() => setPane("requirements")}
         >
@@ -118,6 +136,8 @@ export function MatchMap() {
           type="button"
           role="tab"
           aria-selected={pane === "cv"}
+          aria-controls="map-cv"
+          id="map-tab-cv"
           class={`tab${pane === "cv" ? " tab--current" : ""}`}
           onClick={() => setPane("cv")}
         >
@@ -126,7 +146,7 @@ export function MatchMap() {
       </div>
 
       <div class="map" data-pane={pane}>
-        <div class="map__requirements">
+        <div class="map__requirements" id="map-requirements" role="tabpanel" aria-labelledby="map-tab-requirements">
           {musts.length > 0 && (
             <section class="stack stack--tight">
               <h2 class="map__group">{t("map.mustHave")}</h2>
@@ -135,7 +155,7 @@ export function MatchMap() {
                   <RequirementItem
                     key={requirement.id}
                     requirement={requirement}
-                    evidence={evidenceFor.get(requirement.id)!}
+                    evidence={evidenceOf(requirement.id)}
                     animate={arrivedEvidence.value.has(requirement.id)}
                     sweepIndex={index}
                     onSelectLine={selectLine}
@@ -153,7 +173,7 @@ export function MatchMap() {
                   <RequirementItem
                     key={requirement.id}
                     requirement={requirement}
-                    evidence={evidenceFor.get(requirement.id)!}
+                    evidence={evidenceOf(requirement.id)}
                     animate={arrivedEvidence.value.has(requirement.id)}
                     sweepIndex={musts.length + index}
                     onSelectLine={selectLine}
@@ -164,7 +184,19 @@ export function MatchMap() {
           )}
         </div>
 
-        <div class="map__cv">
+        <div class="map__cv" id="map-cv" role="tabpanel" aria-labelledby="map-tab-cv">
+          {/* "No evidence yet" reads very differently when the evidence was
+              cut off or scrambled on the way in. The warning belongs next to
+              the verdicts, not only on the screen where the CV was added. */}
+          {doc.warnings.length > 0 && (
+            <ul class="stack stack--tight map__warnings">
+              {doc.warnings.map((warning) => (
+                <li key={warning} class="cvwarning">
+                  {t(`cv.warning.${warning}`)}
+                </li>
+              ))}
+            </ul>
+          )}
           <DocumentSheet title={t("map.yourCv")} scrollRef={(element) => (sheetRef.current = element)}>
             {doc.lines.map((line) => (
               <CvLine

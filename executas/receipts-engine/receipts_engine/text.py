@@ -79,14 +79,6 @@ def sha256_of(value: str) -> str:
     return hashlib.sha256(normalize(value).encode("utf-8")).hexdigest()
 
 
-def estimate_tokens(value: str) -> int:
-    """Rough token count. Deliberately pessimistic (3.6 chars/token).
-
-    Used only to stay inside the host's 32 000-token-per-invoke sampling cap,
-    where over-estimating costs a little context and under-estimating costs the
-    whole run.
-    """
-    return int(len(value) / 3.6) + 1
 
 
 def trim_to_chars(value: str, limit: int) -> tuple[str, bool]:

@@ -1,6 +1,5 @@
 {
   "app.name": "Receipts",
-  "app.tagline": "Her başvuruyu uyarla. Hiçbir şey uydurma.",
 
   "nav.matches": "Eşleşmeler",
   "nav.cv": "CV'niz",
@@ -41,14 +40,6 @@
   "cv.warning.tables_flattened": "Tablolar tek satıra indirildi.",
   "cv.warning.truncated": "CV uzun olduğu için sonu eşleşmeye dahil edilmedi.",
 
-  "cv.section.header": "Başlık",
-  "cv.section.summary": "Özet",
-  "cv.section.experience": "Deneyim",
-  "cv.section.education": "Eğitim",
-  "cv.section.skills": "Beceriler",
-  "cv.section.projects": "Projeler",
-  "cv.section.certifications": "Sertifikalar",
-  "cv.section.other": "Diğer",
 
   "match.new.heading": "Bir iş ilanı yapıştırın",
   "match.new.body": "İlanın tamamı en iyi sonucu verir: gereksinimler, sorumluluklar, hepsi.",
@@ -58,7 +49,6 @@
   "match.new.fetch": "Sayfayı oku",
   "match.new.fetching": "Sayfa okunuyor…",
   "match.new.run": "Eşleşmeyi çalıştır",
-  "match.new.urlFailed": "Bu sayfa okunmasına izin vermedi. İlan metnini yapıştırın.",
   "match.new.needCv": "Önce CV'nizi ekleyin — eşleşmenin karşılaştıracağı bir şey olmalı.",
 
   "progress.reading": "İlan okunuyor",
@@ -78,7 +68,6 @@
   "map.missingNote": "Bunlar saklanacak değil, hazırlanılacak konular.",
   "map.tailor": "Maddeleri uyarla",
   "map.letter": "Ön yazı yaz",
-  "map.export": "Dışa aktar",
   "map.copySummary": "Özeti kopyala",
   "map.copied": "Özet kopyalandı",
   "map.evidenceIn": "Kanıt: {lines}",
@@ -101,7 +90,6 @@
   "tailor.suggestion": "Öneri",
   "tailor.dropped": "Bu satırı, CV'nizde olmayan bilgiler eklemeden güçlendiremedik.",
   "tailor.empty": "Bu ilan için CV'nizde yeniden yazılması gereken bir satır çıkmadı.",
-  "tailor.sourceChip": "Kaynak: {line}",
 
   "letter.heading": "Ön yazı",
   "letter.body": "Her paragraf, dayandığı CV satırlarını listeler.",
@@ -113,26 +101,23 @@
   "letter.length": "Uzunluk",
   "letter.length.short": "Kısa",
   "letter.length.standard": "Standart",
-  "letter.rewrite": "Yeniden yaz",
   "letter.showCitations": "Atıfları göster",
   "letter.hideCitations": "Atıfları gizle",
   "letter.copy": "Kopyala",
   "letter.copied": "Kopyalandı",
-  "letter.export": "Dışa aktar",
   "letter.placeholderWarning": "Göndermeden önce {items} yerine gerçek bilgiyi yazın.",
 
-  "export.heading": "Dışa aktar",
-  "export.body": "Kabul ettiğiniz maddeleri ve ön yazıyı DOCX olarak indirir.",
   "export.download": "DOCX indir",
   "export.preparing": "Dosyanız hazırlanıyor…",
   "export.done": "Kaydedildi",
-  "export.nothing": "Önce bir madde kabul edin ya da ön yazı yazın.",
+  "export.unverified": "Düzenlediğiniz {count} satır CV'nize dayandırılamadı. Belgede de böyle yazıyor — göndermeden önce kontrol edin.",
 
   "tracker.heading": "Eşleşmeler",
   "tracker.empty": "Eşleşmeleriniz burada görünecek. Başlamak için bir iş ilanı yapıştırın.",
   "tracker.coverage": "{total} gereksinimden {strong} tanesi kanıtlı",
-  "tracker.open": "Aç",
   "tracker.delete": "Sil",
+  "tracker.deleteConfirmTitle": "Bu eşleşme silinsin mi?",
+  "tracker.deleteConfirmBody": "Eşleşme, maddeleri ve ön yazısı da gider. Yeniden çalıştırmak yeni bir analiz demek.",
   "tracker.status": "Durum",
   "tracker.status.drafted": "Taslak",
   "tracker.status.applied": "Başvuruldu",
@@ -156,7 +141,6 @@
   "settings.deleteConfirmTitle": "Her şey silinsin mi?",
   "settings.deleteConfirmBody": "Bu işlem CV'nizi ve tüm eşleşmeleri Anna'dan siler. Geri alınamaz.",
   "settings.deleteConfirmAction": "Her şeyi sil",
-  "settings.deleted": "Her şey silindi.",
 
   "summary.sentence": "{total} gereksinimden {evidenced} tanesi CV'nizde kanıtlanıyor.",
   "summary.mustMissing.one": "1 zorunlu madde için kanıt yok.",
@@ -166,7 +150,6 @@
   "common.close": "Kapat",
   "common.retry": "Yeniden dene",
   "common.loading": "Yükleniyor…",
-  "common.example": "Örnek",
   "common.exampleNote": "Bu kayıtlı bir örnek. Gerçek eşleşme için CV'nizi ekleyin.",
 
   "error.file_too_large": "Bu dosya 2 MB'ın üzerinde. Daha küçük bir PDF dışa aktarın ya da metni yapıştırın.",
@@ -180,5 +163,9 @@
   "error.internal_error": "Motor beklenmedik bir sorunla karşılaştı. Yeniden çalıştırın.",
   "error.host_unavailable": "Anna, Receipts motoruna ulaşamadı. Anna Agent'ınızın çevrimiçi olduğunu kontrol edin.",
   "error.url_fetch_failed": "Bu sayfa okunmasına izin vermedi. İlan metnini yapıştırın.",
+  "error.save_failed": "Eşleşme tamamlandı ama Anna kaydedemedi. Ekranda duruyor — pencereyi kapatmadan ihtiyacınız olanı kopyalayın.",
+  "error.export_failed": "Dosya indirilenlere ulaşmadı. Yeniden dışa aktarın.",
+  "error.export_empty": "Önce bir madde kabul edin ya da ön yazı yazın — belgeye koyacak bir şey yok.",
+  "error.cv_changed": "Bu eşleşme yapıldıktan sonra CV'niz değişti. Uyarlamadan önce eşleşmeyi yeniden çalıştırın.",
   "error.cancelled": ""
 }

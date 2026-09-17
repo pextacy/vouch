@@ -30,6 +30,10 @@ HARD_MAX_BULLETS = 12
 #: Rewriting a one-word skills entry is noise; there is nothing to tighten.
 _MIN_SOURCE_CHARS = 25
 
+#: Bullet length the prompt asks for; enforced here because a model overrun
+#: would otherwise reach the user as a half-finished sentence.
+MAX_SUGGESTION_CHARS = 220
+
 
 async def tailor_bullets(
     llm: LlmClient,
@@ -70,10 +74,16 @@ async def tailor_bullets(
             await _repair(llm, cv, repairs, line_text, requirements, posting_vocab, locale)
         )
 
-    ordered = {bullet.source_line_ids[0]: bullet for bullet in bullets if bullet.source_line_ids}
+    # Grouped, not keyed: two suggestions can start from the same CV line, and
+    # a plain dict would drop one of them without saying so.
+    by_line: dict[str, list[TailoredBullet]] = {}
+    for bullet in bullets:
+        if bullet.source_line_ids:
+            by_line.setdefault(bullet.source_line_ids[0], []).append(bullet)
+
     return TailorResult(
         match_id=match.id,
-        bullets=[ordered[lid] for lid in targets if lid in ordered],
+        bullets=[bullet for lid in targets for bullet in by_line.get(lid, [])],
     )
 
 
@@ -143,16 +153,17 @@ async def _repair(
             user_prompt=user,
             max_tokens=1536,
         )
-        repaired = {tuple(item.source_line_ids): item for item in output.bullets}
+        repaired = list(output.bullets)
     except Exception as exc:  # noqa: BLE001 — a failed repair is a dropped bullet
         log(f"tailor: repair call failed ({type(exc).__name__}) — dropping suggestions")
-        repaired = {}
+        repaired = []
 
     results: list[TailoredBullet] = []
-    for item, failed_tokens in repairs:
+    unclaimed = list(repaired)
+    for position, (item, failed_tokens) in enumerate(repairs):
         source_ids = [lid for lid in item.source_line_ids if lid in line_text]
         sources = [line_text[lid] for lid in source_ids]
-        candidate = repaired.get(tuple(item.source_line_ids))
+        candidate = _claim_repair(unclaimed, item, position, len(repairs))
         if candidate is not None:
             verdict = verify(
                 candidate.suggestion,
@@ -178,6 +189,37 @@ async def _repair(
     return results
 
 
+def _claim_repair(
+    unclaimed: list[LlmBullet], original: LlmBullet, position: int, total: int
+) -> LlmBullet | None:
+    """Pair a rewritten bullet with the one it was meant to replace.
+
+    Requiring the model to echo the id list in the same order made a reordered
+    or shortened list look like no repair at all, and the user lost a
+    suggestion that had actually been fixed. Matching gets three chances — the
+    same set of ids, any shared id, then position when the model returned one
+    bullet per request — and each rewrite is claimed only once, so two
+    originals can never collapse onto the same replacement.
+    """
+    wanted = set(original.source_line_ids)
+
+    for candidate in unclaimed:
+        if set(candidate.source_line_ids) == wanted:
+            unclaimed.remove(candidate)
+            return candidate
+
+    for candidate in unclaimed:
+        if wanted & set(candidate.source_line_ids):
+            unclaimed.remove(candidate)
+            return candidate
+
+    # No ids in common anywhere: only trust position when the model answered
+    # one rewrite per failed bullet, which is what the prompt asks for.
+    if len(unclaimed) == total - position and unclaimed:
+        return unclaimed.pop(0)
+    return None
+
+
 def _accepted(
     item: LlmBullet,
     source_ids: list[str],
@@ -187,9 +229,26 @@ def _accepted(
     return TailoredBullet(
         source_line_ids=source_ids,
         original=" ".join(sources),
-        suggestion=item.suggestion.strip()[:220],
+        suggestion=_shorten(item.suggestion.strip()),
         targets=[tid for tid in item.targets if tid in requirements],
     )
+
+
+def _shorten(suggestion: str, limit: int = MAX_SUGGESTION_CHARS) -> str:
+    """Hold a suggestion to bullet length without cutting a word in half.
+
+    The prompt asks for at most ``limit`` characters; when a model overruns,
+    a hard slice leaves the user staring at "…reconciliation for 1,2". Trimming
+    on a word boundary can only remove claims, never add one, so the verdict
+    the verifier already returned still holds.
+    """
+    if len(suggestion) <= limit:
+        return suggestion
+    cut = suggestion[:limit].rstrip()
+    space = cut.rfind(" ")
+    if space > limit * 0.6:
+        cut = cut[:space]
+    return cut.rstrip(" ,;:-–—").rstrip()
 
 
 def _candidate_lines(cv: CVDoc, match: MatchResult, limit: int) -> list[str]:

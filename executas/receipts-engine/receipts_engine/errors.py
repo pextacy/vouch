@@ -1,7 +1,7 @@
 """Error objects shared by every action.
 
 Every failure the user can see is an ``EngineError`` carrying one of the codes
-from ``docs.md §3``. The UI looks the code up in its i18n table, so the
+from ``docs/docs.md §3``. The UI looks the code up in its i18n table, so the
 ``message`` here is a developer-facing fallback, never the string shown to a
 user. ``retriable`` tells the UI whether to offer "Try again".
 """

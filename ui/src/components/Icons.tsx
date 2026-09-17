@@ -106,14 +106,6 @@ export function TrashIcon(props: IconProps) {
   );
 }
 
-export function CheckIcon(props: IconProps) {
-  return (
-    <svg {...frame(props)}>
-      {props.title && <title>{props.title}</title>}
-      <path d="m3 8.5 3.5 3.5L13 5" />
-    </svg>
-  );
-}
 
 export function PencilIcon(props: IconProps) {
   return (

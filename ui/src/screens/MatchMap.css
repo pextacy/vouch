@@ -5,6 +5,12 @@
 .map {
   display: grid;
   gap: var(--space-6);
+  /* The screen is a flex column, so this grid is a flex item — and a flex item
+   * shrinks. With `min-height: 0` it shrank to 24 px around a 1,500 px list:
+   * the requirements painted outside their own box, the sticky action bar
+   * landed in the middle of them, and the last requirements fell off the end
+   * of the scrollable area on a phone. It sizes to its content instead. */
+  flex: none;
   min-height: 0;
 }
 
@@ -20,6 +26,10 @@
 
 .map__cv {
   min-height: 0;
+}
+
+.map__warnings {
+  margin-bottom: var(--space-3);
 }
 
 .map__actions {

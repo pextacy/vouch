@@ -6,6 +6,8 @@
  * a bug and reads like carelessness.
  */
 
+import { readFileSync, readdirSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
 import en from "../../ui/src/i18n/en.json";
@@ -24,6 +26,11 @@ const ERROR_CODES = [
   "internal_error",
   "host_unavailable",
   "url_fetch_failed",
+  // UI-only codes: the engine succeeded, the surrounding host call did not.
+  "save_failed",
+  "export_failed",
+  "export_empty",
+  "cv_changed",
 ];
 
 describe("dictionaries", () => {
@@ -72,7 +79,7 @@ describe("t()", () => {
 
   it("falls back to English rather than printing the key", () => {
     setLocale("tr");
-    expect(t("app.tagline")).not.toBe("app.tagline");
+    expect(t("app.name")).not.toBe("app.name");
     setLocale("en");
   });
 
@@ -106,5 +113,73 @@ describe("summary sentence", () => {
       "14 gereksinimden 9 tanesi CV'nizde kanıtlanıyor. 2 zorunlu madde için kanıt yok.",
     );
     setLocale("en");
+  });
+});
+
+/**
+ * Reachability.
+ *
+ * The other direction of the parity test, and the one the Definition of Done
+ * asks for: a string nobody renders is dead weight that still has to be
+ * translated, reviewed and kept in tone. Most keys are looked up as literals,
+ * so a text scan finds them; the rest are built from a union type at the call
+ * site (`t(`error.${code}`)`), so each of those families is declared here with
+ * the values its type admits, and the family has to match the table exactly.
+ * Adding `status.unknown` to en.json without teaching `Status` about it fails
+ * here rather than shipping a string that never renders.
+ */
+
+const SOURCE = (() => {
+  const dir = new URL("../../ui/src/", import.meta.url);
+  const read = (at: URL): string =>
+    readdirSync(at, { withFileTypes: true })
+      .map((entry) => {
+        const child = new URL(entry.name + (entry.isDirectory() ? "/" : ""), at);
+        if (entry.isDirectory()) return read(child);
+        return /\.tsx?$/.test(entry.name) ? readFileSync(child, "utf8") : "";
+      })
+      .join("\n");
+  return read(dir);
+})();
+
+/** key prefix → the values the call site's union type admits. */
+const DYNAMIC_FAMILIES: Record<string, string[]> = {
+  "error.": [...ERROR_CODES, "cancelled"],
+  "status.": ["strong", "partial", "missing"],
+  "progress.stage.": ["normalize", "extract", "match", "guard", "summarize", "done"],
+  "letter.tone.": ["plain", "warm", "formal"],
+  "letter.length.": ["short", "standard"],
+  "tracker.status.": ["drafted", "applied", "interview", "offer", "closed"],
+  "settings.theme.": ["system", "light", "dark"],
+  "cv.warning.": ["multi_column_suspected", "tables_flattened", "truncated"],
+};
+
+describe("every string is rendered by something", () => {
+  it("builds each dynamic family from a template literal in the source", () => {
+    for (const prefix of Object.keys(DYNAMIC_FAMILIES)) {
+      expect(SOURCE, prefix).toContain("`" + prefix + "${");
+    }
+  });
+
+  it("keeps each family and the table in step", () => {
+    for (const [prefix, values] of Object.entries(DYNAMIC_FAMILIES)) {
+      const inTable = Object.keys(en)
+        .filter((key) => key.startsWith(prefix))
+        .map((key) => key.slice(prefix.length))
+        .sort();
+      expect(inTable, prefix).toEqual([...values].sort());
+    }
+  });
+
+  it("leaves no key that nothing looks up", () => {
+    const dynamic = new Set(
+      Object.entries(DYNAMIC_FAMILIES).flatMap(([prefix, values]) =>
+        values.map((value) => prefix + value),
+      ),
+    );
+    const orphans = Object.keys(en).filter(
+      (key) => !dynamic.has(key) && !SOURCE.includes(`"${key}"`),
+    );
+    expect(orphans).toEqual([]);
   });
 });

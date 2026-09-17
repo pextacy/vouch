@@ -61,11 +61,16 @@ function writeLocal(key: string, value: unknown): void {
 
 export function createStub(): AnnaRuntime {
   const uploads = new Map<string, { chunks: string[]; total: number }>();
+  let matchCounter = 0;
 
   function engine(args: EngineArgs): unknown {
     switch (args.action) {
       case "health":
         return ok({ healthy: true, version: "preview", sampling: false, tool_id: "stub" });
+
+      case "forget":
+        uploads.clear();
+        return ok({ uploads_dropped: 0, cached_postings_dropped: 0 });
 
       case "upload_chunk": {
         const id = String(args.upload_id ?? "");
@@ -104,13 +109,26 @@ export function createStub(): AnnaRuntime {
       }
 
       case "run_match":
-        return ok(EXAMPLE_MATCH);
+        // The recorded example's content, but a fresh identity: stamped with
+        // the hash of the CV that was actually passed, and with an id of its
+        // own. Production ties a match to one CV and gives every run its own
+        // record — a preview that reuses the example's id sends the tracker
+        // row back to the read-only example instead of the user's match, and
+        // hides every bug those two ties exist to catch.
+        return ok({
+          ...EXAMPLE_MATCH,
+          id: mintMatchId(),
+          created_at: new Date().toISOString(),
+          cv_hash: hashOf(args.cv) ?? EXAMPLE_MATCH.cv_hash,
+        });
 
       case "tailor":
-        return ok(EXAMPLE_TAILOR);
+        if (!samePairing(args)) return fail("invalid_args", "match belongs to another CV");
+        return ok({ ...EXAMPLE_TAILOR, match_id: matchIdOf(args) });
 
       case "letter":
-        return ok({ ...EXAMPLE_LETTER, tone: args.tone ?? "plain" });
+        if (!samePairing(args)) return fail("invalid_args", "match belongs to another CV");
+        return ok({ ...EXAMPLE_LETTER, match_id: matchIdOf(args), tone: args.tone ?? "plain" });
 
       case "export_docx":
         if (!args.tailor_result && !args.letter_result) {
@@ -125,6 +143,30 @@ export function createStub(): AnnaRuntime {
       default:
         return fail("invalid_args", `unknown action ${String(args.action)}`);
     }
+  }
+
+  function hashOf(value: unknown): string | null {
+    const hash = (value as { hash?: unknown } | null)?.hash;
+    return typeof hash === "string" && hash ? hash : null;
+  }
+
+  /** The engine's `_assert_same_cv`, enforced here for the same reason. */
+  /** A fresh id per run, so preview matches behave like real ones. */
+  function mintMatchId(): string {
+    matchCounter += 1;
+    return `preview-${matchCounter}-${Date.now().toString(36)}`;
+  }
+
+  function matchIdOf(args: EngineArgs): string {
+    const id = (args.match as { id?: unknown } | null)?.id;
+    return typeof id === "string" ? id : EXAMPLE_TAILOR.match_id;
+  }
+
+  function samePairing(args: EngineArgs): boolean {
+    const cvHash = hashOf(args.cv);
+    const matchHash = (args.match as { cv_hash?: unknown } | null)?.cv_hash;
+    if (!cvHash || typeof matchHash !== "string") return true;
+    return cvHash === matchHash;
   }
 
   /** A deliberately simple split — enough to show real lines from real text. */

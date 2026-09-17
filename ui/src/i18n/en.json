@@ -1,6 +1,5 @@
 {
   "app.name": "Receipts",
-  "app.tagline": "Tailor every application. Invent nothing.",
 
   "nav.matches": "Matches",
   "nav.cv": "Your CV",
@@ -41,14 +40,6 @@
   "cv.warning.tables_flattened": "Tables were flattened into single lines.",
   "cv.warning.truncated": "Your CV was long, so the end was left out of the match.",
 
-  "cv.section.header": "Header",
-  "cv.section.summary": "Summary",
-  "cv.section.experience": "Experience",
-  "cv.section.education": "Education",
-  "cv.section.skills": "Skills",
-  "cv.section.projects": "Projects",
-  "cv.section.certifications": "Certifications",
-  "cv.section.other": "Other",
 
   "match.new.heading": "Paste a job posting",
   "match.new.body": "The whole posting works best — requirements, responsibilities, the lot.",
@@ -58,7 +49,6 @@
   "match.new.fetch": "Read the page",
   "match.new.fetching": "Reading the page…",
   "match.new.run": "Run match",
-  "match.new.urlFailed": "This page didn't let us read it. Paste the posting text instead.",
   "match.new.needCv": "Add your CV first — a match needs something to check against.",
 
   "progress.reading": "Reading the posting",
@@ -78,7 +68,6 @@
   "map.missingNote": "These are worth preparing for, not hiding.",
   "map.tailor": "Tailor bullets",
   "map.letter": "Write cover letter",
-  "map.export": "Export",
   "map.copySummary": "Copy summary",
   "map.copied": "Summary copied",
   "map.evidenceIn": "Evidence in {lines}",
@@ -101,7 +90,6 @@
   "tailor.suggestion": "Suggestion",
   "tailor.dropped": "We couldn't strengthen this line without adding facts that aren't in your CV.",
   "tailor.empty": "No line in your CV needed rewriting for this posting.",
-  "tailor.sourceChip": "From {line}",
 
   "letter.heading": "Cover letter",
   "letter.body": "Every paragraph lists the CV lines it stands on.",
@@ -113,26 +101,23 @@
   "letter.length": "Length",
   "letter.length.short": "Short",
   "letter.length.standard": "Standard",
-  "letter.rewrite": "Write it again",
   "letter.showCitations": "Show citations",
   "letter.hideCitations": "Hide citations",
   "letter.copy": "Copy",
   "letter.copied": "Copied",
-  "letter.export": "Export",
   "letter.placeholderWarning": "Replace {items} before sending.",
 
-  "export.heading": "Export",
-  "export.body": "Downloads a DOCX with your accepted bullets and the letter.",
   "export.download": "Download DOCX",
   "export.preparing": "Preparing your file…",
   "export.done": "Saved",
-  "export.nothing": "Accept a bullet or write a letter first.",
+  "export.unverified": "{count} line(s) you edited could not be traced back to your CV. The document says so too — check them before you send it.",
 
   "tracker.heading": "Matches",
   "tracker.empty": "Your matches will appear here. Paste a job posting to start.",
   "tracker.coverage": "{strong} of {total} evidenced",
-  "tracker.open": "Open",
   "tracker.delete": "Delete",
+  "tracker.deleteConfirmTitle": "Delete this match?",
+  "tracker.deleteConfirmBody": "The match, its bullets and its letter go with it. Running it again means another analysis.",
   "tracker.status": "Status",
   "tracker.status.drafted": "Drafted",
   "tracker.status.applied": "Applied",
@@ -156,7 +141,6 @@
   "settings.deleteConfirmTitle": "Delete everything?",
   "settings.deleteConfirmBody": "This deletes your CV and all matches from Anna. It can't be undone.",
   "settings.deleteConfirmAction": "Delete everything",
-  "settings.deleted": "Everything is deleted.",
 
   "summary.sentence": "{evidenced} of {total} requirements have evidence in your CV.",
   "summary.mustMissing.one": "1 must-have doesn't.",
@@ -166,7 +150,6 @@
   "common.close": "Close",
   "common.retry": "Try again",
   "common.loading": "Loading…",
-  "common.example": "Example",
   "common.exampleNote": "This is a recorded example. Add your CV to run a real match.",
 
   "error.file_too_large": "This file is over 2 MB. Export a smaller PDF or paste the text.",
@@ -180,5 +163,9 @@
   "error.internal_error": "The engine hit an unexpected problem. Run it again.",
   "error.host_unavailable": "Anna couldn't reach the Receipts engine. Check that your Anna Agent is online.",
   "error.url_fetch_failed": "This page didn't let us read it. Paste the posting text instead.",
+  "error.save_failed": "The match finished but Anna couldn't save it. It is on screen — copy what you need before you close the window.",
+  "error.export_failed": "The file didn't reach your downloads. Export it again.",
+  "error.export_empty": "Accept a bullet or write a letter first — there is nothing to put in the document yet.",
+  "error.cv_changed": "Your CV changed after this match was made. Run the match again before tailoring it.",
   "error.cancelled": ""
 }

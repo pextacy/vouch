@@ -20,7 +20,7 @@ from ..errors import EngineError
 from ..schemas import CVDoc, CVLine, Language, Section, Warning
 from ..text import clean, detect_language, sha256_of, strip_bullet, trim_to_chars
 
-#: Hard input ceiling (``prd.md §F1``). Also the point past which base64 chunk
+#: Hard input ceiling (``docs/prd.md §F1``). Also the point past which base64 chunk
 #: upload stops being reasonable.
 MAX_FILE_BYTES: Final[int] = 2 * 1024 * 1024
 

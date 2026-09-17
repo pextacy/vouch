@@ -469,6 +469,16 @@ class TechLexicon:
         """Whether ``token`` names a technology unambiguously."""
         return self.canonical(token) is not None
 
+    def is_ambiguous(self, token: str) -> bool:
+        """Whether ``token`` spells a technology that is also an ordinary word.
+
+        "Go" and "R" are tools and English words at once, so the tech rule
+        skips them. The proper-noun rule still has to see them on their own —
+        glued to the word before them they become a phrase ("Shipped Go") that
+        no CV ever contains.
+        """
+        return normalize_token(token) in self._ambiguous_keys
+
     def matches(self, text: str) -> set[str]:
         """Every canonical term appearing in ``text``.
 

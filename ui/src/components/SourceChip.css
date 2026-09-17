@@ -16,6 +16,16 @@
   min-height: 24px;
 }
 
+/* A citation is a tap target on a phone, and 25 px of it is a miss. The chip
+ * keeps its size inside a taller box rather than growing into a button — it
+ * sits inline next to prose, where a 44 px pill would read as one. */
+@media (max-width: 559px) {
+  .chip--button {
+    min-height: 44px;
+    padding-block: var(--space-2);
+  }
+}
+
 .chip--button:hover {
   border-color: var(--pencil);
   color: var(--pencil);

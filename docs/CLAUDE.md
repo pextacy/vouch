@@ -8,23 +8,23 @@ Receipts is an Anna App for the Anna AI OS Marketplace. The user pastes a job po
 Goal: earn monthly grants in the Anna Founding Builder Program through Qualified App MAU (500+ in October, 1,000+ in November).
 
 ## Read first
+All four live in `docs/`, beside this file.
+
 | File | When |
 |---|---|
 | `prd.md` | Feature scope, acceptance criteria, metrics |
-| `plan.md` | Architecture, repo layout, test strategy, timeline, growth |
+| `plan.md` | Architecture, repo layout, test strategy, growth |
 | `docs.md` | Tool contract, schemas, prompts, verifier, design system, screen copy |
-| `phases.md` | Current phase and tasks; check items off when done |
-| `docs/api-notes.md` | Verified Anna host API signatures (created in Phase 0) |
 
 ## Anna platform knowledge — source hierarchy
-1. `docs/api-notes.md` (verified in this project)
+1. The facts recorded below, and the comments beside each call in the code
 2. `https://anna.partners/llms.txt` → append `.md` to any `/developers/**` page for raw Markdown
 3. `github.com/whtcjdtc2007/anna-executa-examples` → `examples/anna-app-focus-flow` (reference app)
 4. General training knowledge — **do not trust it for Anna.** The APIs change quickly.
 
-Never write a host API call by guessing its signature. Read the docs, record it in `api-notes.md`, then code.
+Never write a host API call by guessing its signature. Read the docs first, then code, and record what you verified in a comment where the call is made.
 
-## Known platform facts (verified in Phase 0 — `docs/api-notes.md` is authoritative)
+## Known platform facts (verified against the live host docs)
 - `tool_id`s are **minted** server-side; never invent them. The manifest
   references `bundled:receipts-engine` and the publish flow substitutes the
   minted id, writing `bundle/anna-tool-ids.js` for the UI. Local dev runs on
@@ -46,27 +46,40 @@ Never write a host API call by guessing its signature. Read the docs, record it 
 - Sampling structured output is `responseFormat` on the wire, with
   `onUnsupported: "json_object"`. Caps are **per invoke**: 8 calls, 32k tokens.
 - Plugin stdout is **JSON-RPC only**. Logs go to stderr. A single stray `print` to stdout breaks the protocol.
+- Sampling replies arrive on the same pipe as invokes: the **reader thread**
+  dispatches them itself, never the invoke pool, or parked workers deadlock.
+- A response over the 512 KiB stdio cap is answered with `-32603`. Never spill
+  a body to a temp file — it would be CV-derived text on disk (rule 5).
 - APS `storage` holds all user state. The engine writes **nothing** to disk — CV bytes live in memory for the length of one parse and are then dropped.
 - After editing the plugin: `uv tool install . --reinstall --no-cache`.
 - A failed or empty run never returns success (critical for MAU counting and review).
+- A transient sampling failure (provider error, timeout) is retried once inside
+  the per-invoke budget; a quota or grant failure is not, because the next
+  attempt fails the same way and spends what the user has left.
 
 ## Architecture boundaries
 - `ui/` is source. `bundle/` is build output — **never edit by hand**.
 - Business logic and LLM calls live in the **engine** (Python). The UI handles presentation, state and host API calls only.
 - LLM access only through reverse sampling. **No** API keys, `.env` files or external HTTP services.
-- Before adding any npm/pip dependency, record the justification in `plan.md`. Allowed UI deps: `preact`, `@preact/signals`, `@anna-ai/app-runtime`. Allowed Python: `pydantic`, `pypdf`, `python-docx`, `rapidfuzz`, (dev) `pytest`, `anna-executa-test`, `ruff`, `mypy`. Dev-only tooling added since: `playwright-core` (screenshots) and `fonttools[woff]` (font subsetting, run by hand) — both justified in `plan.md §6`.
+- Before adding any npm/pip dependency, record the justification in `plan.md`. Allowed UI deps: `preact`, `@preact/signals`, `@anna-ai/app-runtime`. Allowed Python: `pydantic`, `pypdf`, `python-docx`, `rapidfuzz`, (dev) `pytest`, `anna-executa-test`, `ruff`, `mypy`. Dev-only tooling: `playwright-core` (screenshots and the accessibility audit) and `fonttools[woff]` (font subsetting, run by hand) — both justified in `plan.md §6`.
 
 ## Non-negotiable product rules
 1. **Invent nothing.** Tailor and letter output never reaches the UI without passing `verify/grounding.py`. Never delete or skip tests to loosen the verifier. For a false positive: add a test, narrow the rule.
 2. CV lines go to the LLM as `L<n>: text`; the LLM returns ids; the engine validates ids.
 3. All LLM output is validated with Pydantic schemas (`extra="forbid"`); schemas are generated from models.
-4. Prompt files are versioned (`*.v1.md`). Prompt change → run `scripts/eval_match.py` and put results in the PR description.
+4. Prompt files are versioned (`*.v1.md`). Prompt change → run
+   `pnpm eval:adversarial` (offline, gates leakage) and, when a host is
+   reachable, `pnpm eval -- --sampling-cmd <cmd>` for the quality numbers.
+   Put both tables in the PR description.
 5. CV content is never logged and never stored outside storage.
 6. Example/demo mode never calls the LLM.
+7. What the user edits by hand is theirs, but the document never claims it was
+   checked: `export_docx` re-verifies every accepted line against the CV and the
+   footer only makes the "traceable to your CV" claim when nothing failed.
 
 ## Frontend rules — must not look vibe-coded
 Design system is `docs.md §8`. Summary and prohibitions:
-- No colors, spacing or font sizes outside the tokens. Colors: `--paper --sheet --ink --graphite --rule --marker --pencil --tab`.
+- No colors, spacing or font sizes outside the tokens. Colors: `--paper --sheet --ink --graphite --rule --marker --pencil --on-pencil --tab`. Text on `--pencil` uses `--on-pencil`, never a literal white: the dark theme's pencil is pale and white reads at 2.3:1 on it.
 - Typefaces: UI = Schibsted Grotesk; document surfaces = Source Serif 4. No other fonts, no monospace.
 - **The single bold element is the highlighter mark** (`--marker`). Yellow appears nowhere else.
 - FORBIDDEN: Tailwind, shadcn, off-the-shelf icon libraries, gradients, glassmorphism, neon glow, emoji icons, circular score gauges, red/green traffic-light badges, grids of identical shadowed cards, ALL-CAPS eyebrow labels, `A · B · C` meta strings, `→` in buttons, single-word emphasis in headings, fade-slide-up entrances on every section, receipt clip-art / zigzag paper edges / dot-matrix fonts, marketing words like "Unlock / Supercharge / Seamless / magic".
@@ -74,7 +87,9 @@ Design system is `docs.md §8`. Summary and prohibitions:
 - Shadow only on `DocumentSheet`.
 - Status is expressed by color + shape + text (strong = full mark + "Evidenced", partial = underline + "Related", missing = brackets + "No evidence yet").
 - Copy is sentence case and active voice; buttons say exactly what they do; errors don't apologize and give the fix. Copy comes from `docs.md §9` — don't make it up.
-- After every UI change: take screenshots at 360 px and 1280 px and check them against the Phase 2 anti-vibe-code audit in `phases.md`.
+- After every UI change: run `pnpm a11y` (contrast, focus, tap targets, headings —
+  it fails the build on a violation) and take screenshots at 360 px and 1280 px,
+  then look at them against the prohibitions above.
 - Accessibility: visible focus (`2px solid var(--pencil)`), full keyboard support, `prefers-reduced-motion`, AA contrast.
 
 ## Code style
@@ -89,27 +104,32 @@ Design system is `docs.md §8`. Summary and prohibitions:
 pnpm install
 pnpm build                        # ui → bundle
 pnpm --dir ui dev                 # UI in stub mode
+pnpm check                        # typecheck · bundle tests · engine tests · validate --strict
+pnpm lint:engine                  # ruff + mypy --strict
+pnpm a11y                         # accessibility audit over the built bundle
+pnpm screenshots                  # 360 px and 1280 px (add --dark for the dark set)
+pnpm eval -- --sampling-cmd <cmd> # match quality against the golden set
+pnpm eval:adversarial             # leakage gate, offline — no model needed
 anna-app dev                      # harness http://localhost:5180
 anna-app dev --llm                # real sampling
 anna-app validate --strict        # before every commit
-cd executas/receipts-engine && uv sync --extra dev && uv run pytest ../../tests -q
-uv run ruff check . && uv run mypy receipts_engine
-python scripts/eval_match.py fixtures/golden
 ```
 
 ## How to work
-- Before starting a task, check the current phase in `phases.md`; don't do out-of-phase work.
 - Small testable steps: test first (especially `verify/` and `parse/`), then code.
-- A task is finished when tests are green, `anna-app validate --strict` is clean, and the `phases.md` box is checked.
+- A task is finished when tests are green and `anna-app validate --strict` is clean.
 - When uncertain: follow a decision in `docs.md` if one exists; otherwise implement the simplest safe option and add a "Decision:" note to `docs.md`.
 - If docs and code diverge, don't move on silently; update one of them.
 - Runs from developer/test accounts don't count toward MAU, and bulk automated runs can be flagged as cheating; load-test only in the local harness.
 
 ## Definition of Done
 - [ ] Acceptance criteria match `prd.md`
-- [ ] Unit + contract tests green; eval thresholds met (if engine changed)
+- [ ] Unit + contract tests green; `pnpm eval:adversarial` passes and the
+      quality thresholds are met (if the engine or a prompt changed)
 - [ ] Empty, loading and error states implemented
-- [ ] EN + TR strings added
-- [ ] 360 px and desktop screenshots reviewed; anti-vibe-code audit clean
-- [ ] `anna-app validate --strict` clean
-- [ ] Related docs updated
+- [ ] EN + TR strings added — and no string left in the table that nothing renders
+- [ ] `pnpm a11y` clean; 360 px and desktop screenshots reviewed against the
+      prohibitions above
+- [ ] `pnpm check` and `pnpm lint:engine` clean
+- [ ] Related docs updated — `docs/` is the only prose in the repository, so a
+      change that makes a sentence there false is not finished

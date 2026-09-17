@@ -1,7 +1,7 @@
 /**
  * Everything the user owns, in their own Anna storage.
  *
- * Keys are versioned (docs.md §7) so a schema change can migrate rather than
+ * Keys are versioned (docs/docs.md §7) so a schema change can migrate rather than
  * silently mis-read. In production `anna.storage.*` is APS-backed at
  * `scope=app`, so values survive window lifetimes and devices; in the local
  * harness they live in the window's 256 KB `runtime_state`, which is why match
@@ -27,7 +27,7 @@ const KEY_CV = "cv:v1";
 const KEY_INDEX = "matches:index:v1";
 const KEY_MATCH = (id: string) => `match:v1:${id}`;
 
-/** Tracker cap from docs.md §7 — the oldest entries fall off the end. */
+/** Tracker cap from docs/docs.md §7 — the oldest entries fall off the end. */
 const MAX_TRACKER_ENTRIES = 300;
 
 async function read<T>(key: string): Promise<T | null> {
@@ -123,6 +123,22 @@ export async function attachLetter(id: string, letter: LetterResult): Promise<vo
   const record = await loadMatch(id);
   if (!record) return;
   await write(KEY_MATCH(id), { ...record, letter });
+}
+
+/**
+ * Remember which suggestions the user accepted, and how they edited them.
+ *
+ * Reopening a match reloads the suggestions from storage, so losing the
+ * acceptance would ask the user to redo a review they already finished — and
+ * an edited line they would then have to retype from memory.
+ */
+export async function attachAccepted(
+  id: string,
+  accepted: Record<string, string>,
+): Promise<void> {
+  const record = await loadMatch(id);
+  if (!record) return;
+  await write(KEY_MATCH(id), { ...record, accepted });
 }
 
 export async function setMatchStatus(

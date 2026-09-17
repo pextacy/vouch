@@ -20,7 +20,10 @@ async def extract_requirements(
 ) -> tuple[list[Requirement], str | None, str | None]:
     """Return the requirements plus the role and company the posting states."""
     system = render("extract.v1.md", output_language=language_name(locale))
-    user = f"JOB POSTING\n-----------\n{posting.text}"
+    # Fenced, because the posting is the one input the user did not write: it
+    # can come from any page `web.fetch` reached, and a page that tells the
+    # model what to do would otherwise be indistinguishable from the prompt.
+    user = f"JOB POSTING\n-----------\n<<<POSTING\n{_fence_safe(posting.text)}\nPOSTING>>>"
 
     output = await llm.structured(
         name="receipts_requirements",
@@ -55,6 +58,11 @@ async def extract_requirements(
     title = _hint(output.posting_title) or posting.title_hint
     company = _hint(output.company) or posting.company_hint
     return requirements, title, company
+
+
+def _fence_safe(text: str) -> str:
+    """Neutralise a posting that writes the closing marker itself."""
+    return text.replace("POSTING>>>", "POSTING>>").replace("<<<POSTING", "<<POSTING")
 
 
 def _hint(value: str) -> str | None:

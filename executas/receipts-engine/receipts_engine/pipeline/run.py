@@ -128,7 +128,9 @@ def _cache_get(
     if time.time() - stored_at > _CACHE_TTL_S:
         _REQUIREMENT_CACHE.pop((posting_hash, locale), None)
         return None
-    return requirements, title, company
+    # Copies, not the cached instances: two runs of the same posting must not
+    # end up holding the same mutable objects inside two different results.
+    return [requirement.model_copy(deep=True) for requirement in requirements], title, company
 
 
 def _cache_put(
@@ -144,6 +146,8 @@ def _cache_put(
     _REQUIREMENT_CACHE[(posting_hash, locale)] = (time.time(), requirements, title, company)
 
 
-def clear_requirement_cache() -> None:
-    """Test seam — the cache is process-wide."""
+def clear_requirement_cache() -> int:
+    """Empty the process-wide cache. Returns how many postings it held."""
+    held = len(_REQUIREMENT_CACHE)
     _REQUIREMENT_CACHE.clear()
+    return held

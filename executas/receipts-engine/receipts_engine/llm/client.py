@@ -13,6 +13,7 @@ at most two repairs stays under the host's 8-calls-per-invoke cap.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import re
 from typing import Any, Final, TypeVar
@@ -26,7 +27,9 @@ from ..host.sampling import (
     ERR_MAX_TOKENS_EXCEEDED,
     ERR_NOT_GRANTED,
     ERR_NOT_NEGOTIATED,
+    ERR_PROVIDER_ERROR,
     ERR_QUOTA_EXCEEDED,
+    ERR_TIMEOUT,
     ERR_UNSUPPORTED_RESPONSE_FORMAT,
     SamplingClient,
     SamplingError,
@@ -41,6 +44,12 @@ T = TypeVar("T", bound=BaseModel)
 #: reject the third call with -32007 mid-pipeline.
 INVOKE_TOKEN_BUDGET: Final[int] = 30_000
 INVOKE_CALL_BUDGET: Final[int] = 7
+
+#: A provider blip or a slow completion is not the user's fault and not a
+#: reason to throw away a run they have already waited a minute for. One retry
+#: is all the per-invoke budget can carry without risking the later stages.
+_TRANSIENT_RETRIES: Final[int] = 1
+_RETRY_BACKOFF_S: Final[float] = 1.5
 
 _FENCE_RE: Final[re.Pattern[str]] = re.compile(
     r"```(?:json)?\s*(?P<body>[\[{].*?[\]}])\s*```", re.DOTALL
@@ -69,6 +78,10 @@ class TokenBudget:
     def spend(self, estimated: int) -> None:
         self.calls_left -= 1
         self.tokens_left -= estimated
+
+    def can_afford(self, estimated: int) -> bool:
+        """Whether another call of this size still fits — used before a retry."""
+        return self.calls_left > 0 and estimated <= self.tokens_left
 
 
 class LlmClient:
@@ -149,23 +162,35 @@ class LlmClient:
         timeout: float,
     ) -> str:
         estimated = _estimate(messages, system_prompt) + max_tokens
-        self.budget.reserve(estimated)
-        try:
-            result = await self._sampling.create_message(
-                messages=messages,
-                max_tokens=max_tokens,
-                system_prompt=system_prompt,
-                temperature=temperature,
-                response_format=response_format,
-                # A model without strict-schema support should fall back to
-                # plain JSON mode, not fail the user's run.
-                on_unsupported="json_object",
-                timeout=timeout,
-            )
-        except SamplingError as exc:
-            raise _translate(exc) from exc
-        finally:
-            self.budget.spend(estimated)
+        attempt = 0
+        while True:
+            self.budget.reserve(estimated)
+            try:
+                result = await self._sampling.create_message(
+                    messages=messages,
+                    max_tokens=max_tokens,
+                    system_prompt=system_prompt,
+                    temperature=temperature,
+                    response_format=response_format,
+                    # A model without strict-schema support should fall back to
+                    # plain JSON mode, not fail the user's run.
+                    on_unsupported="json_object",
+                    timeout=timeout,
+                )
+                break
+            except SamplingError as exc:
+                if attempt >= _TRANSIENT_RETRIES or not _is_transient(exc):
+                    raise _translate(exc) from exc
+                attempt += 1
+                log(f"sampling failed with {exc.code} — retrying ({attempt}/{_TRANSIENT_RETRIES})")
+            finally:
+                self.budget.spend(estimated)
+            if not self.budget.can_afford(estimated):
+                # Retrying would only trade one failure for a budget failure.
+                raise EngineError(
+                    "sampling_unavailable", "no budget left to retry the model call"
+                )
+            await asyncio.sleep(_RETRY_BACKOFF_S * attempt)
 
         meta = (result.get("_meta") or {}).get("responseFormat") or {}
         if meta.get("downgraded"):
@@ -258,6 +283,16 @@ def _estimate(messages: list[dict[str, Any]], system_prompt: str) -> int:
         if isinstance(content, dict):
             chars += len(str(content.get("text") or ""))
     return int(chars / 3.6) + 1
+
+
+def _is_transient(exc: SamplingError) -> bool:
+    """Whether the host failure is worth one more attempt.
+
+    A provider error or a timeout says nothing about the request; a quota,
+    a missing grant or a refused format says the next attempt fails the same
+    way, and retrying those would burn the user's budget to no end.
+    """
+    return exc.code in {ERR_PROVIDER_ERROR, ERR_TIMEOUT}
 
 
 def _translate(exc: SamplingError) -> EngineError:

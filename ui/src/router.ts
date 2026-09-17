@@ -72,15 +72,3 @@ export function startRouter(): () => void {
   return () => window.removeEventListener("hashchange", handler);
 }
 
-/**
- * The `?ref=` channel tag from the store link (plan.md §9).
- *
- * Read once at boot and kept in memory only — it is a launch-channel label,
- * not something to attach to a user.
- */
-export function referralTag(): string | null {
-  if (typeof window === "undefined") return null;
-  const search = new URLSearchParams(window.location.search);
-  const ref = search.get("ref");
-  return ref && /^[\w.-]{1,40}$/.test(ref) ? ref : null;
-}

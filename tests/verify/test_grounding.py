@@ -265,6 +265,64 @@ def test_posting_vocabulary_may_not_supply_a_title() -> None:
     )
 
 
+# ─── Unit collisions ──────────────────────────────────────────────────
+#
+# The number is only half of the fact. Before these cases the verifier keyed a
+# claim on the value alone, so any 40 in the CV vouched for "40%" — the exact
+# fabrication the product exists to stop, licensed by a coincidence.
+
+
+@pytest.mark.parametrize(
+    ("generated", "source"),
+    [
+        ("Improved conversion by 40%", ["Worked 40 hours a week on checkout"]),
+        ("Cut infrastructure cost by 30%", ["Managed a team of 30 engineers"]),
+        ("Reduced latency to 250ms", ["Handled 250 requests per second"]),
+        ("Shipped 5 features", ["Worked 5 years in backend"]),
+        ("Owned a $2M budget", ["Reviewed 2M log lines a day"]),
+    ],
+)
+def test_a_number_with_a_different_unit_is_not_evidence(
+    generated: str, source: list[str]
+) -> None:
+    assert not ok(generated, source)
+
+
+@pytest.mark.parametrize(
+    ("generated", "source"),
+    [
+        ("Cut errors by 18 percent", ["Reduced settlement errors by 18%"]),
+        ("Yüzde 18 hata azalttım", ["Reduced settlement errors by 18%"]),
+        ("Cut p95 latency to 250 ms", ["Reduced p95 latency from 800ms to 250ms"]),
+        ("Spent 5 saat a day on reconciliation", ["Spent 5 hours a day on reconciliation"]),
+        ("Led a team of 4 engineers", ["Led a team of 4 developers at Acme"]),
+    ],
+)
+def test_the_same_fact_in_another_wording_still_passes(
+    generated: str, source: list[str]
+) -> None:
+    assert ok(generated, source)
+
+
+# ─── Word boundaries ──────────────────────────────────────────────────
+
+
+def test_a_longer_word_does_not_evidence_a_shorter_name() -> None:
+    assert not ok("Led engineering at Meta", ["Owned metadata pipelines for the catalogue"])
+
+
+def test_a_longer_word_does_not_evidence_a_title() -> None:
+    assert not ok("Senior engineer on payments", ["Engineer with seniority in payments"])
+
+
+def test_turkish_case_suffix_without_an_apostrophe_still_evidences_the_name() -> None:
+    assert ok("Ankara ofisini kurdum", ["Ankarada yeni ofisi kurdum"])
+
+
+def test_spelling_only_difference_still_passes() -> None:
+    assert ok("Built services with Node js", ["Built services with Node.js and Postgres"])
+
+
 # ─── Shape and edges ──────────────────────────────────────────────────
 
 

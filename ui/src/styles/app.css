@@ -13,3 +13,14 @@
   min-height: 100%;
   color: var(--graphite);
 }
+
+/* A note about how the CV was read. Two screens show it — where the CV is
+ * added, and beside the verdicts on the match map, where "no evidence yet"
+ * would otherwise read as a statement about the candidate rather than about a
+ * page that was cut short. */
+.cvwarning {
+  max-width: var(--measure);
+  padding-inline-start: var(--space-3);
+  border-inline-start: 3px solid var(--marker-fill);
+  color: var(--graphite);
+}

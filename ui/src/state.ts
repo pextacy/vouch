@@ -12,7 +12,7 @@
 
 import { computed, signal } from "@preact/signals";
 
-import { connect, isPreview } from "./lib/anna";
+import { connect, isPreview, runtime, unwrap } from "./lib/anna";
 import * as engine from "./lib/engine";
 import { EngineFailure } from "./lib/engine";
 import { EXAMPLE_CV, EXAMPLE_LETTER, EXAMPLE_MATCH, EXAMPLE_TAILOR } from "./lib/example";
@@ -27,10 +27,11 @@ import type {
   LineId,
   Locale,
   MatchResult,
+  Profile,
   ProgressEvent,
-  Stage,
   StoredCv,
   TailorResult,
+  Theme,
   Tone,
   TrackerEntry,
 } from "./lib/types";
@@ -38,7 +39,7 @@ import { detectLocale, setLocale } from "./i18n";
 import { navigate } from "./router";
 
 export type Phase = "idle" | "running" | "done" | "error";
-export type Theme = "system" | "light" | "dark";
+export type { Theme };
 
 // ─── Session ──────────────────────────────────────────────────────────
 
@@ -73,6 +74,8 @@ export const letterTone = signal<Tone>("plain");
 export const letterLength = signal<Length>("standard");
 
 export const exportPhase = signal<Phase>("idle");
+/** Lines in the exported document the CV could not vouch for after an edit. */
+export const exportUnverified = signal(0);
 
 // ─── Tracker ──────────────────────────────────────────────────────────
 
@@ -98,12 +101,20 @@ export async function boot(): Promise<void> {
   const profile = await store.loadProfile();
   const chosen: Locale = profile?.locale ?? detectLocale();
   setLocale(chosen);
+  changeTheme(profile?.theme ?? "system");
   if (!profile) {
-    await store.saveProfile({
-      locale: chosen,
-      onboarding_done: false,
-      created_at: new Date().toISOString(),
-    });
+    // A profile that cannot be written is a preference lost, not a reason to
+    // refuse to start: everything below works from the defaults just chosen.
+    try {
+      await store.saveProfile({
+        locale: chosen,
+        onboarding_done: false,
+        created_at: new Date().toISOString(),
+        theme: "system",
+      });
+    } catch {
+      // Falls back to the detected locale on every open until storage works.
+    }
   }
 
   cv.value = await store.loadCv();
@@ -172,18 +183,39 @@ async function withCv(run: () => Promise<CVDoc>, filename: string | null): Promi
   }
 }
 
-/** Fix a misread line in place. The hash stays: the text the model sees changed. */
+/**
+ * Fix a misread line in place.
+ *
+ * The hash moves with the edit. It is the only thing tying a saved match to
+ * the CV it was made against, so leaving it alone would let a match cite a
+ * line whose text has since changed — evidence that no longer says what the
+ * match claims it says.
+ */
 export async function editCvLine(id: LineId, text: string): Promise<void> {
   const current = cv.value;
   if (!current) return;
   const lines = current.doc.lines.map((line) => (line.id === id ? { ...line, text } : line));
   const stored: StoredCv = {
     ...current,
-    doc: { ...current.doc, lines },
+    doc: { ...current.doc, lines, hash: editedHash(current.doc.hash) },
     updated_at: new Date().toISOString(),
   };
   await store.saveCv(stored);
   cv.value = stored;
+}
+
+/**
+ * Mark a hash as edited.
+ *
+ * The engine's hash covers the parsed text and cannot be recomputed here
+ * without re-parsing (which would renumber the lines every citation points
+ * at). A counted suffix keeps the one property that matters: two different CV
+ * contents never share a hash.
+ */
+function editedHash(hash: string): string {
+  const match = /^(.*)~e(\d+)$/.exec(hash);
+  if (!match?.[1]) return `${hash}~e1`;
+  return `${match[1]}~e${Number(match[2]) + 1}`;
 }
 
 export async function removeCv(): Promise<void> {
@@ -205,7 +237,13 @@ export async function fetchPosting(url: string): Promise<void> {
   urlPhase.value = "running";
   error.value = null;
   try {
-    const { runtime, unwrap } = await import("./lib/anna");
+    if (!isFetchableUrl(url)) {
+      throw new EngineFailure({
+        code: "url_fetch_failed",
+        message: "only http and https links can be fetched",
+        retriable: false,
+      });
+    }
     const response = unwrap<{ pages?: { ok: boolean; content?: string }[] }>(
       await runtime().web.fetch({ urls: [url], format: "text", max_chars: 20000 }),
     );
@@ -226,6 +264,21 @@ export async function fetchPosting(url: string): Promise<void> {
       failure instanceof EngineFailure && failure.code !== "internal_error"
         ? failure.detail
         : { code: "url_fetch_failed", message: "the page could not be read", retriable: false };
+  }
+}
+
+/**
+ * Whether a link is worth handing to the host.
+ *
+ * `web.fetch` only speaks http(s); anything else — a `javascript:` paste, a
+ * `file:` path, a typo with no scheme — comes back as an opaque host error
+ * after a round trip, when the honest answer was available here.
+ */
+function isFetchableUrl(value: string): boolean {
+  try {
+    return ["http:", "https:"].includes(new URL(value).protocol);
+  } catch {
+    return false;
   }
 }
 
@@ -283,11 +336,26 @@ function applyProgress(event: ProgressEvent): void {
   arrivedEvidence.value = next;
 }
 
+/**
+ * Show the finished match, then persist it.
+ *
+ * The run is the expensive part and it already succeeded: a storage failure
+ * must not throw the result away and report the whole run as failed. The map
+ * goes on screen either way, with a notice that this one was not saved.
+ */
 async function finishMatch(result: MatchResult): Promise<void> {
   currentMatch.value = result;
   matchPhase.value = "done";
-  tracker.value = await store.saveMatch(result);
   navigate(`/match/${result.id}`);
+  try {
+    tracker.value = await store.saveMatch(result);
+  } catch {
+    error.value = {
+      code: "save_failed",
+      message: "the match could not be saved",
+      retriable: false,
+    };
+  }
 }
 
 export function cancelMatch(): void {
@@ -302,6 +370,9 @@ export async function openMatch(id: string): Promise<void> {
   }
   const record = await store.loadMatch(id);
   if (!record) {
+    // The index says the match exists and storage says it does not. Leaving
+    // the row there means the next tap does the same nothing, so drop it.
+    tracker.value = await store.deleteMatch(id).catch(() => tracker.value);
     navigate("/matches");
     return;
   }
@@ -309,7 +380,7 @@ export async function openMatch(id: string): Promise<void> {
   currentMatch.value = record.match;
   tailorResult.value = record.tailor ?? null;
   letterResult.value = record.letter ?? null;
-  acceptedBullets.value = {};
+  acceptedBullets.value = record.accepted ?? {};
   matchPhase.value = "done";
   tailorPhase.value = record.tailor ? "done" : "idle";
   letterPhase.value = record.letter ? "done" : "idle";
@@ -318,7 +389,14 @@ export async function openMatch(id: string): Promise<void> {
 
 export async function removeMatch(id: string): Promise<void> {
   tracker.value = await store.deleteMatch(id);
+  forgetLetters(id);
   if (currentMatch.value?.id === id) currentMatch.value = null;
+}
+
+function forgetLetters(matchId: string): void {
+  for (const key of [...letterCache.keys()]) {
+    if (key.startsWith(`${matchId}:`)) letterCache.delete(key);
+  }
 }
 
 export async function updateMatchStatus(id: string, status: ApplicationStatus): Promise<void> {
@@ -340,10 +418,6 @@ export function showExample(): void {
   navigate("/match/example");
 }
 
-export function exampleCv(): CVDoc {
-  return EXAMPLE_CV;
-}
-
 /** The CV the current screen should display — the example has its own. */
 export function activeCv(): CVDoc | null {
   if (showingExample.value) return EXAMPLE_CV;
@@ -356,6 +430,7 @@ export async function runTailor(): Promise<void> {
   const match = currentMatch.value;
   const doc = cv.value?.doc;
   if (!match || !doc || showingExample.value) return;
+  if (reportCvDrift(match.cv_hash, doc.hash)) return;
 
   tailorPhase.value = "running";
   error.value = null;
@@ -370,22 +445,87 @@ export async function runTailor(): Promise<void> {
   }
 }
 
+/**
+ * Refuse to build on a match made against a different CV.
+ *
+ * The engine refuses this too (`_assert_same_cv`), but it refuses after the
+ * user has waited for an invoke. Saying it here costs nothing and names the
+ * actual cause: the CV changed, so the citations may no longer hold.
+ */
+function reportCvDrift(matchHash: string, cvHash: string): boolean {
+  if (matchHash === cvHash) return false;
+  error.value = {
+    code: "cv_changed",
+    message: "this match was made against an earlier version of the CV",
+    retriable: false,
+  };
+  return true;
+}
+
 export function acceptBullet(lineId: string, text: string): void {
   acceptedBullets.value = { ...acceptedBullets.value, [lineId]: text };
+  void persistAccepted();
 }
 
 export function skipBullet(lineId: string): void {
   const next = { ...acceptedBullets.value };
   delete next[lineId];
   acceptedBullets.value = next;
+  void persistAccepted();
+}
+
+/**
+ * Acceptance is part of the record, not of this window's session.
+ *
+ * Writes are chained rather than fired in parallel: each one reads the stored
+ * record before rewriting it, so two clicks in flight at once could save the
+ * older of the two states.
+ */
+let acceptedWrite: Promise<void> = Promise.resolve();
+
+function persistAccepted(): Promise<void> {
+  const match = currentMatch.value;
+  if (!match || showingExample.value) return Promise.resolve();
+  const snapshot = acceptedBullets.value;
+  acceptedWrite = acceptedWrite
+    .catch(() => undefined)
+    .then(() => store.attachAccepted(match.id, snapshot))
+    .catch(() => {
+      // The choice stays on screen; only the memory of it is lost.
+    });
+  return acceptedWrite;
 }
 
 // ─── Letter ───────────────────────────────────────────────────────────
+
+/**
+ * Letters already written in this session, by tone and length.
+ *
+ * Comparing two tones is the point of the switch, and going back to the first
+ * one should not cost a second analysis — or produce a different letter than
+ * the one the user just decided they preferred.
+ */
+const letterCache = new Map<string, LetterResult>();
+
+function letterKey(matchId: string, tone: Tone, length: Length): string {
+  return `${matchId}:${tone}:${length}:${currentLocale()}`;
+}
 
 export async function runLetter(): Promise<void> {
   const match = currentMatch.value;
   const doc = cv.value?.doc;
   if (!match || !doc || showingExample.value) return;
+  if (reportCvDrift(match.cv_hash, doc.hash)) return;
+
+  const key = letterKey(match.id, letterTone.value, letterLength.value);
+  const cached = letterCache.get(key);
+  if (cached) {
+    letterResult.value = cached;
+    letterPhase.value = "done";
+    error.value = null;
+    void store.attachLetter(match.id, cached).catch(() => undefined);
+    return;
+  }
 
   letterPhase.value = "running";
   error.value = null;
@@ -395,6 +535,7 @@ export async function runLetter(): Promise<void> {
       length: letterLength.value,
       locale: currentLocale(),
     });
+    letterCache.set(key, result);
     letterResult.value = result;
     letterPhase.value = "done";
     await store.attachLetter(match.id, result);
@@ -409,25 +550,37 @@ export async function runLetter(): Promise<void> {
 /**
  * Build the DOCX in the engine, put it in the app's own APS storage, then ask
  * the host to save it. The host page clicks the anchor, so the download works
- * regardless of the iframe's sandbox tokens (docs/api-notes.md §6).
+ * regardless of the iframe's sandbox tokens.
  */
 export async function exportDocument(): Promise<void> {
   const match = currentMatch.value;
   if (!match) return;
   const accepted = acceptedTailor();
-  if (!accepted && !letterResult.value) return;
+  if (!accepted && !letterResult.value) {
+    // The button was enabled and pressing it did nothing, which reads as a
+    // broken app rather than as "there is nothing in the document yet".
+    error.value = {
+      code: "export_empty",
+      message: "nothing has been accepted to export",
+      retriable: false,
+    };
+    return;
+  }
 
   exportPhase.value = "running";
   error.value = null;
+  exportUnverified.value = 0;
   try {
     const file = await engine.exportDocx({
       ...(accepted ? { tailor: accepted } : {}),
       ...(letterResult.value ? { letter: letterResult.value } : {}),
+      ...(cv.value ? { cv: cv.value.doc } : {}),
       company: match.posting.company,
       role: match.posting.title,
       locale: currentLocale(),
     });
     await saveFile(file.filename, file.content_b64, file.mime);
+    exportUnverified.value = file.unverified ?? 0;
     exportPhase.value = "done";
   } catch (failure) {
     exportPhase.value = "error";
@@ -436,7 +589,6 @@ export async function exportDocument(): Promise<void> {
 }
 
 async function saveFile(filename: string, contentB64: string, mime: string): Promise<void> {
-  const { runtime } = await import("./lib/anna");
   const anna = runtime();
   const bytes = base64Length(contentB64);
   const path = `exports/${filename}`;
@@ -445,7 +597,6 @@ async function saveFile(filename: string, contentB64: string, mime: string): Pro
     put_url?: string;
     headers?: Record<string, string>;
   }
-  const { unwrap } = await import("./lib/anna");
   const put = unwrap<UploadInit>(
     await anna.files.upload_init({
       path,
@@ -454,15 +605,30 @@ async function saveFile(filename: string, contentB64: string, mime: string): Pro
       ttl_seconds: 900,
     }),
   );
-  if (!put.put_url) throw new Error("upload_init returned no URL");
+  if (!put.put_url) {
+    throw new EngineFailure({
+      code: "export_failed",
+      message: "upload_init returned no URL",
+      retriable: true,
+    });
+  }
 
   // R2 rejects the presigned PUT unless Content-Type matches the signed value
   // exactly, so the returned headers go on verbatim.
-  await fetch(put.put_url, {
+  const upload = await fetch(put.put_url, {
     method: "PUT",
     headers: { "Content-Type": mime, ...(put.headers ?? {}) },
     body: new Blob([decodeBase64(contentB64).buffer as ArrayBuffer], { type: mime }),
   });
+  // `fetch` only rejects on a network failure: a refused PUT resolves with a
+  // 4xx, and finalising it would hand the user a download that is not there.
+  if (!upload.ok) {
+    throw new EngineFailure({
+      code: "export_failed",
+      message: `the upload was refused with ${upload.status}`,
+      retriable: true,
+    });
+  }
   await anna.files.upload_finalize({ path, size: bytes });
   await anna.files.download({ path, filename });
 }
@@ -496,26 +662,60 @@ export function acceptedTailor(): TailorResult | null {
 
 export async function changeLocale(next: Locale): Promise<void> {
   setLocale(next);
-  const profile = await store.loadProfile();
-  await store.saveProfile({
-    locale: next,
-    onboarding_done: profile?.onboarding_done ?? false,
-    created_at: profile?.created_at ?? new Date().toISOString(),
-  });
+  await saveProfileWith({ locale: next });
 }
 
+/** Apply a theme now; persisting it is what makes the choice survive a reload. */
 export function changeTheme(next: Theme): void {
   theme.value = next;
-  if (typeof document === "undefined") return;
-  if (next === "system") {
-    document.documentElement.removeAttribute("data-theme");
-  } else {
-    document.documentElement.setAttribute("data-theme", next);
+  if (typeof document !== "undefined") {
+    if (next === "system") {
+      document.documentElement.removeAttribute("data-theme");
+    } else {
+      document.documentElement.setAttribute("data-theme", next);
+    }
+  }
+}
+
+export async function chooseTheme(next: Theme): Promise<void> {
+  changeTheme(next);
+  await saveProfileWith({ theme: next });
+}
+
+/**
+ * Rewrite the profile, keeping the fields this call did not set.
+ *
+ * A preference that cannot be stored is worth a lost setting, never a crash:
+ * the change is already applied on screen by the time this runs.
+ */
+async function saveProfileWith(changes: Partial<Profile>): Promise<void> {
+  try {
+    const profile = await store.loadProfile();
+    await store.saveProfile({
+      locale: profile?.locale ?? currentLocale(),
+      onboarding_done: profile?.onboarding_done ?? false,
+      created_at: profile?.created_at ?? new Date().toISOString(),
+      theme: profile?.theme ?? theme.value,
+      ...changes,
+    });
+  } catch {
+    // Reverts to the detected locale and the system theme on the next open.
   }
 }
 
 export async function deleteEverything(): Promise<void> {
-  await store.deleteEverything();
+  letterCache.clear();
+  try {
+    await store.deleteEverything();
+    // Storage is the record, but the engine may still hold an abandoned
+    // upload; "deleted" should not mean "deleted in ten minutes".
+    await engine.forget().catch(() => undefined);
+  } catch (failure) {
+    // Leave the screen showing what is still there. Reporting "deleted" over a
+    // failed delete is the one lie this screen must never tell.
+    report(failure);
+    return;
+  }
   cv.value = null;
   tracker.value = [];
   currentMatch.value = null;
@@ -535,12 +735,12 @@ export function dismissError(): void {
 }
 
 export function currentLocale(): Locale {
-  return (document?.documentElement.lang as Locale) === "tr" ? "tr" : "en";
+  // `document?.` does not guard an undeclared global — only `typeof` does, and
+  // this module is imported by tests that run without a DOM.
+  if (typeof document === "undefined") return "en";
+  return (document.documentElement.lang as Locale) === "tr" ? "tr" : "en";
 }
 
-export function stageOf(event: ProgressEvent | null): Stage {
-  return event?.stage ?? "normalize";
-}
 
 function report(failure: unknown): void {
   if (failure instanceof EngineFailure) {

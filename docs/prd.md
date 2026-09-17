@@ -5,7 +5,7 @@
 > **Marketplace subtitle:** *Tailor every application. Invent nothing.*
 > **Slug:** `receipts` (fallback if taken: `receipts-cv`) · **Category:** productivity / career · **Languages:** English (default), Turkish
 
-Status: v1.0 draft · Date: September 16, 2026 · Owner: (your name)
+Status: v1.0.1, built and verified · Date: September 17, 2026 · Owner: (your name)
 
 ---
 
@@ -76,7 +76,7 @@ Every new version is re-reviewed, so v1.0 must be launch-ready and complete.
 ### F3 — Tailored Bullets
 - Suggestions only for CV lines tied to strong/partial requirements.
 - Each suggestion: original line ↔ suggestion, source chip (`L23`), accept / skip / edit.
-- Verifier (docs.md §6): any number, proper noun or tool in the suggestion that isn't in the source → one repair attempt → if it still fails, the suggestion is dropped with the note "We couldn't strengthen this line without adding facts that aren't in your CV."
+- Verifier (docs.md §6): any number (with its unit), date, duration, proper noun, tool or job title in the suggestion that isn't in the source → one repair attempt → if it still fails, the suggestion is dropped with the note "We couldn't strengthen this line without adding facts that aren't in your CV."
 
 ### F4 — Cover Letter
 - Tone: Plain / Warm / Formal. Length: short (~150 words) / standard (~250).
@@ -138,13 +138,13 @@ Stretch: 4,000 MAU in December (Tier B). Source: Developer Console → Analytics
 
 | Risk | Likelihood | Mitigation |
 |---|---|---|
-| Review rejection (Executa packaging / Cloud Agent failure) | Medium | End-to-end test on Cloud Agent before submitting; review checklist (phases.md Phase 4). |
+| Review rejection (Executa packaging / Cloud Agent failure) | Medium | End-to-end test on Cloud Agent before submitting; review checklist. |
 | LLM fabricates content | Medium | Deterministic verifier + repair + drop; citations visible in UI. |
 | PDF parsing yields garbled text | Medium | Editable preview; paste-text fallback; multi-column warning. |
 | Posting URL can't be fetched (login walls, bot protection) | High | URL is optional; error message routes to paste. |
 | Low initial traffic | High | Launch plan (plan.md §9), Anna marketing support programs, `?ref=` channel tracking. |
 | September Launch Boost missed | Very high | Accepted: review time makes 200 MAU in September unrealistic. Target is qualifying in October (deadline Nov 30). |
-| Uncertain host API signatures | Medium | Verify in Phase 0 via `llms.txt`; record in `docs/api-notes.md`. |
+| Uncertain host API signatures | Medium | Verify against `llms.txt` before writing the call; record the verified signature in a comment beside it. |
 | Name/slug already taken on Anna | Low | Fallback slug `receipts-cv`; display name stays "Receipts". |
 
 ## 10. Monthly maintenance roadmap (program requirement)
@@ -159,6 +159,6 @@ Stretch: 4,000 MAU in December (Tier B). Source: Developer Console → Analytics
 ## 11. Submission package
 
 - Published Anna Marketplace app (required).
-- Open-source repo (MIT) with README explaining the architecture and the "Invent nothing" verifier.
+- Open-source repo (MIT); `docs/` explains the architecture and the "Invent nothing" verifier.
 - 90-second demo video (script in plan.md §10).
 - DoraHacks BUIDL page: what it is, who it's for, how AI is used, how it connects to Anna. **Note:** a forum thread mentions a separate DoraHacks deadline of September 30 — confirm the date and requirements on your own BUIDL page.

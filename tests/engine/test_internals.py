@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import base64
+import io
 import json
 
 import pytest
 
 from receipts_engine.errors import EngineError
+from receipts_engine.host.frames import MAX_STDIO_MESSAGE_BYTES, write_frame
 from receipts_engine.llm import extract_json, response_format, schema_for
 from receipts_engine.llm.json_schema import MAX_NODES, MAX_SERIALIZED_BYTES
 from receipts_engine.pipeline import sentence_for
@@ -209,3 +211,34 @@ def test_summary_omits_the_warning_when_nothing_is_missing() -> None:
 
 def test_turkish_summary_is_written_in_turkish() -> None:
     assert sentence_for(14, 9, 2, "tr").startswith("14 gereksinimden 9 tanesi")
+
+
+# ─── stdout framing ───────────────────────────────────────────────────
+
+
+def test_a_frame_within_the_cap_is_written_verbatim() -> None:
+    out = io.StringIO()
+    write_frame({"jsonrpc": "2.0", "id": 7, "result": {"data": "x" * 100}}, stdout=out)
+    assert json.loads(out.getvalue())["result"]["data"] == "x" * 100
+
+
+def test_an_oversized_response_becomes_an_error_not_a_temp_file() -> None:
+    # Spilling the body to disk would put CV-derived text outside the user's
+    # storage, which this engine never does — so the size is reported instead.
+    out = io.StringIO()
+    payload = "x" * (MAX_STDIO_MESSAGE_BYTES + 1024)
+    write_frame({"jsonrpc": "2.0", "id": 9, "result": {"data": payload}}, stdout=out)
+
+    frame = json.loads(out.getvalue())
+    assert frame["id"] == 9
+    assert frame["error"]["code"] == -32603
+    assert payload not in out.getvalue()
+
+
+def test_an_oversized_notification_is_dropped() -> None:
+    out = io.StringIO()
+    write_frame(
+        {"jsonrpc": "2.0", "method": "executa/progress", "params": {"x": "y" * (600 * 1024)}},
+        stdout=out,
+    )
+    assert out.getvalue() == ""

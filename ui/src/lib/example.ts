@@ -1,5 +1,5 @@
 /**
- * The pre-recorded example (`prd.md` F8).
+ * The pre-recorded example (`docs/prd.md` F8).
  *
  * "See an example" shows a finished match without calling the model. That is
  * deliberate on two counts: a first-time visitor sees the output before

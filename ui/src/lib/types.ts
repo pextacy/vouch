@@ -1,7 +1,7 @@
 /**
  * TypeScript twins of the Pydantic models in `receipts_engine/schemas.py`.
  *
- * These two files are the contract (docs.md §4). When one changes the other
+ * These two files are the contract (docs/docs.md §4). When one changes the other
  * has to change in the same commit — a drift here is a runtime error the
  * compiler cannot see, because the payload crosses a JSON boundary.
  */
@@ -117,9 +117,11 @@ export interface ExportResult {
   filename: string;
   content_b64: string;
   mime: string;
+  /** Hand-edited lines the CV could no longer vouch for. */
+  unverified?: number;
 }
 
-/** Error codes from docs.md §3. Every one has a string in both locales. */
+/** Error codes from docs/docs.md §3. Every one has a string in both locales. */
 export type ErrorCode =
   | "file_too_large"
   | "unreadable_file"
@@ -132,7 +134,12 @@ export type ErrorCode =
   | "invalid_args"
   | "internal_error"
   | "host_unavailable"
-  | "url_fetch_failed";
+  | "url_fetch_failed"
+  // UI-only: the engine succeeded but the surrounding host call did not.
+  | "save_failed"
+  | "export_failed"
+  | "export_empty"
+  | "cv_changed";
 
 export interface EngineError {
   code: ErrorCode;
@@ -141,7 +148,7 @@ export interface EngineError {
   details?: Record<string, unknown>;
 }
 
-/** Progress stages the plugin emits (docs.md §3). */
+/** Progress stages the plugin emits (docs/docs.md §3). */
 export type Stage = "normalize" | "extract" | "match" | "guard" | "summarize" | "done";
 
 export interface ProgressEvent {
@@ -173,12 +180,18 @@ export interface StoredMatch {
   tailor?: TailorResult;
   letter?: LetterResult;
   status: ApplicationStatus;
+  /** Accepted (and possibly edited) bullets, keyed by their first CV line. */
+  accepted?: Record<string, string>;
 }
+
+/** Interface appearance. Absent on records written before v1.0.1. */
+export type Theme = "system" | "light" | "dark";
 
 export interface Profile {
   locale: Locale;
   onboarding_done: boolean;
   created_at: string;
+  theme?: Theme;
 }
 
 export interface StoredCv {

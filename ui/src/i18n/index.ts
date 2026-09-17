@@ -47,5 +47,3 @@ export function summarySentence(total: number, evidenced: number, mustMissing: n
   if (mustMissing > 1) return `${head} ${t("summary.mustMissing.many", { count: mustMissing })}`;
   return head;
 }
-
-export const DICTIONARY_KEYS = { en: Object.keys(en), tr: Object.keys(tr) };

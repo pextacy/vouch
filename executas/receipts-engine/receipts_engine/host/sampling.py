@@ -6,7 +6,7 @@ that the *same* stdin reader receives both host→plugin requests and host
 replies to our own reverse RPCs, so :meth:`SamplingClient.dispatch_response`
 must be called from the reader loop for every frame without a ``method``.
 
-Host-enforced caps worth remembering (``docs/api-notes.md §3``):
+Host-enforced caps worth remembering:
 8 192 tokens per call · 8 calls per invoke · 32 000 cumulative tokens per
 invoke. The cumulative cap is the one that bites — it is per ``invoke_id``, not
 per call.

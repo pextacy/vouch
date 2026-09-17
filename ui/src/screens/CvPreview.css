@@ -1,10 +1,3 @@
-.cvwarning {
-  max-width: var(--measure);
-  padding-inline-start: var(--space-3);
-  border-inline-start: 3px solid var(--marker-fill);
-  color: var(--graphite);
-}
-
 .cvrow {
   display: flex;
   align-items: flex-start;

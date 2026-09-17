@@ -114,9 +114,6 @@ a {
   gap: var(--space-2);
 }
 
-.stack--loose {
-  gap: var(--space-6);
-}
 
 .row {
   display: flex;
@@ -149,7 +146,7 @@ a {
   border: 1px solid transparent;
   border-radius: var(--radius-button);
   background: var(--pencil);
-  color: #ffffff;
+  color: var(--on-pencil);
   font: inherit;
   font-weight: 500;
   cursor: pointer;
@@ -230,17 +227,7 @@ a {
   font-weight: 500;
 }
 
-.field__hint {
-  color: var(--graphite);
-  font-size: var(--size-xs);
-}
 
-.divider {
-  height: 1px;
-  background: var(--rule);
-  border: 0;
-  margin: 0;
-}
 
 /* Lists are separated by rules, never by a grid of identical shadowed cards. */
 .list > li + li {

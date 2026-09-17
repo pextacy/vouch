@@ -22,6 +22,7 @@ import {
   error,
   exportDocument,
   exportPhase,
+  exportUnverified,
   letterLength,
   letterPhase,
   letterResult,
@@ -109,6 +110,14 @@ export function Letter() {
             ))}
           </DocumentSheet>
         </>
+      )}
+
+      {exportPhase.value === "done" && (
+        <p class={exportUnverified.value > 0 ? "letter__warning" : "small muted"} aria-live="polite">
+          {exportUnverified.value > 0
+            ? t("export.unverified", { count: exportUnverified.value })
+            : t("export.done")}
+        </p>
       )}
 
       <div class="row">

@@ -2,8 +2,7 @@
 
 A 2 MB PDF is 2.7 MB of base64 — past the host reader's 2 MiB line cap and far
 past the 64 KB argument cap on async invokes, so the file arrives as a sequence
-of ``upload_chunk`` calls on the synchronous channel
-(``docs/api-notes.md §6``).
+of ``upload_chunk`` calls on the synchronous channel.
 
 Chunks are held in memory and never written to disk. That is a privacy
 decision, not a performance one: ``CLAUDE.md`` rule 5 says CV content lives in
@@ -122,6 +121,13 @@ class UploadBuffer:
                 details={"received": len(upload.chunks), "total": upload.total},
             )
         return b"".join(upload.chunks), upload.filename
+
+    def clear(self) -> int:
+        """Drop every buffered upload. Returns how many were held."""
+        with self._lock:
+            held = len(self._uploads)
+            self._uploads.clear()
+        return held
 
     def discard(self, upload_id: str) -> bool:
         with self._lock:

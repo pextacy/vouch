@@ -5,17 +5,23 @@
  *     pnpm build && node scripts/screenshots.mjs
  *     node scripts/screenshots.mjs --dark
  *
- * `CLAUDE.md` asks for 360 px and 1280 px captures after every UI change, and
- * `phases.md` Phase 2 has an anti-vibe-code audit that is a looking exercise —
- * neither is satisfied by "it compiled".
+ * `docs/CLAUDE.md` asks for 360 px and 1280 px captures after every UI change,
+ * and the anti-vibe-code audit is a looking exercise — neither is satisfied by
+ * "it compiled".
  *
  * The bundle is served as static files, so `AnnaAppRuntime.connect()` finds no
- * host and the app falls back to preview mode on the recorded example. That is
- * the point: the screenshots show real components with real copy and no model
- * call. Pass `--no-banner` to hide the preview strip for store assets.
+ * host and the app falls back to preview mode. That is the point: the shots
+ * show real components with real copy and no model call. Pass `--no-banner` to
+ * hide the preview strip for store assets.
+ *
+ * Tailor, the cover letter and the tracker are shot on a match run through the
+ * flow (`preview-flow.mjs`) rather than on `#/match/example`, because the
+ * example is read-only: shooting it gives a store listing that shows the
+ * output and none of the verbs — no Accept, no Skip, no Edit, no tone switch,
+ * no tracker row.
  *
  * Uses `playwright-core` against a Chromium already on the machine — it is a
- * tooling dependency, never bundled (see plan.md §6).
+ * tooling dependency, never bundled (see docs/plan.md §6).
  */
 
 import { createServer } from "node:http";
@@ -25,6 +31,8 @@ import { extname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { chromium } from "playwright-core";
+
+import { goTo, runLiveMatch } from "./preview-flow.mjs";
 
 const ROOT = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const BUNDLE = join(ROOT, "bundle");
@@ -51,9 +59,9 @@ const SHOTS = [
   { name: "02-add-cv", hash: "#/cv/add" },
   { name: "03-new-match", hash: "#/new" },
   { name: "04-match-map", hash: "#/match/example" },
-  { name: "05-tailor", hash: "#/match/example", then: "#/tailor" },
-  { name: "06-letter", hash: "#/match/example", then: "#/letter" },
-  { name: "07-tracker", hash: "#/matches" },
+  { name: "05-tailor", live: "/tailor" },
+  { name: "06-letter", live: "/letter" },
+  { name: "07-tracker", live: "/matches" },
   { name: "08-your-data", hash: "#/data" },
 ];
 
@@ -100,23 +108,32 @@ async function main() {
       });
       const page = await context.newPage();
 
+      let liveMatch = null;
       for (const shot of SHOTS) {
-        await page.goto(`${base}/index.html${shot.hash}`, { waitUntil: "networkidle" });
-        await page.waitForSelector(".appbar, .screen", { timeout: 10_000 });
-        if (shot.then) {
-          await page.evaluate((next) => {
-            window.location.hash = next;
-          }, shot.then);
-          await page.waitForTimeout(400);
+        if (shot.live) {
+          liveMatch ??= await runLiveMatch(page, base);
+          await goTo(page, shot.live, ".screen");
+        } else {
+          await page.goto(`${base}/index.html${shot.hash}`, { waitUntil: "networkidle" });
+          await page.waitForSelector(".appbar, .screen", { timeout: 10_000 });
+          if (shot.then) {
+            await page.evaluate((next) => {
+              window.location.hash = next;
+            }, shot.then);
+            await page.waitForTimeout(400);
+          }
         }
         if (hideBanner) {
           await page.addStyleTag({ content: ".preview { display: none }" });
         }
         if (viewport.name === "mobile") {
-          // A full-page capture draws a sticky bar at its position in the
-          // flow, which looks like a bar floating mid-list rather than one
-          // pinned to the bottom of a real viewport.
-          await page.addStyleTag({ content: ".map__actions { position: static }" });
+          // A sticky bar in a full-page capture paints where the viewport was,
+          // which lands it on top of the list. Relative puts it back in the
+          // flow, at the end of the page, which is where it sits when you
+          // actually scroll there.
+          await page.addStyleTag({
+            content: ".map__actions { position: relative; border-top: 0 }",
+          });
         }
         await page.waitForTimeout(250);
 

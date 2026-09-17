@@ -9,12 +9,13 @@
 (``CLAUDE.md`` rule 4). A prompt edit that lifts one number and quietly drops
 another is the failure this exists to catch.
 
-Thresholds (``phases.md`` Phase 1 exit criteria):
+Thresholds:
 
 ===========================  ========
 requirement extraction F1    ≥ 0.85
 false "strong" rate          ≤ 5%
 tailor leakage               0
+letter leakage               0
 ===========================  ========
 
 **How the model is reached.** The engine asks its host for completions over
@@ -30,6 +31,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 import threading
@@ -45,6 +47,15 @@ F1_THRESHOLD = 0.85
 FALSE_STRONG_THRESHOLD = 0.05
 LEAKAGE_THRESHOLD = 0
 
+#: An adversarial run (see ``scripts/fabricating_sampler.py``) gates on the
+#: deterministic half only. Zero leakage is trivial for a verifier that drops
+#: everything, so the run must also keep at least one honest suggestion.
+MIN_KEPT_ADVERSARIAL = 1
+
+#: ``RECEIPTS_EVAL_VERBOSE=1`` lets the plugin's stderr log through, which is
+#: where the verifier says what it dropped and what it repaired.
+VERBOSE = bool(os.environ.get("RECEIPTS_EVAL_VERBOSE"))
+
 
 # ─── Plugin driver ────────────────────────────────────────────────────
 
@@ -58,7 +69,7 @@ class EngineHost:
             cwd=ENGINE_DIR,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
+            stderr=None if VERBOSE else subprocess.DEVNULL,
             text=True,
             encoding="utf-8",
         )
@@ -177,6 +188,10 @@ class CaseScore:
     strong_claims: int = 0
     false_strong: int = 0
     leaks: int = 0
+    bullets_kept: int = 0
+    bullets_total: int = 0
+    letter_leaks: int = 0
+    letter_paragraphs: int = 0
     seconds: float = 0.0
     error: str = ""
     notes: list[str] = field(default_factory=list)
@@ -283,6 +298,31 @@ def count_leaks(tailor: dict[str, Any]) -> int:
     return leaks
 
 
+def count_letter_leaks(letter: dict[str, Any], cv: dict[str, Any]) -> tuple[int, int]:
+    """Paragraphs that reached the caller carrying unsupported claims.
+
+    A paragraph is checked against the lines it cites; one that cites nothing
+    (the closing) is checked against the whole CV, which is the same rule
+    `pipeline/letter.py` applies before it returns.
+    """
+    sys.path.insert(0, str(ENGINE_DIR))
+    from receipts_engine.verify import verify
+
+    by_id = {line["id"]: line["text"] for line in cv["lines"]}
+    all_lines = list(by_id.values())
+
+    leaks = 0
+    paragraphs = letter.get("paragraphs", [])
+    for paragraph in paragraphs:
+        text = paragraph.get("text", "").strip()
+        if not text:
+            continue
+        cited = [by_id[line] for line in paragraph.get("line_ids", []) if line in by_id]
+        if not verify(text, cited or all_lines).ok:
+            leaks += 1
+    return leaks, len(paragraphs)
+
+
 # ─── Runner ───────────────────────────────────────────────────────────
 
 
@@ -327,6 +367,25 @@ def run(args: argparse.Namespace) -> int:
             )
             if tailor.get("success"):
                 score.leaks = count_leaks(tailor["data"])
+                bullets = tailor["data"]["bullets"]
+                score.bullets_total = len(bullets)
+                score.bullets_kept = sum(1 for item in bullets if item.get("suggestion"))
+
+            # The letter is the riskier surface — longer, more fluent, and the
+            # fluent part is where a model reaches for a number nobody gave it.
+            # Measuring only the bullets left that half of the promise ungated.
+            letter = host.invoke(
+                action="letter",
+                cv=cv["data"],
+                match=match["data"],
+                locale=case["language"],
+                tone="plain",
+                length="short",
+            )
+            if letter.get("success"):
+                score.letter_leaks, score.letter_paragraphs = count_letter_leaks(
+                    letter["data"], cv["data"]
+                )
             score.seconds = time.monotonic() - started
             scores.append(score)
 
@@ -341,7 +400,7 @@ def run(args: argparse.Namespace) -> int:
         finally:
             host.close()
 
-    return report(scores, as_json=args.json)
+    return report(scores, as_json=args.json, adversarial=args.adversarial)
 
 
 def _require(result: dict[str, Any], action: str) -> None:
@@ -349,20 +408,30 @@ def _require(result: dict[str, Any], action: str) -> None:
         raise RuntimeError(f"{action}: {result.get('data', {}).get('code', 'failed')}")
 
 
-def report(scores: list[CaseScore], *, as_json: bool) -> int:
+def report(scores: list[CaseScore], *, as_json: bool, adversarial: bool = False) -> int:
     done = [score for score in scores if score.ok]
     f1 = sum(score.f1 for score in done) / len(done) if done else 0.0
     strong_total = sum(score.strong_claims for score in done)
     false_strong_total = sum(score.false_strong for score in done)
     false_strong_rate = false_strong_total / strong_total if strong_total else 0.0
     leaks = sum(score.leaks for score in done)
+    letter_leaks = sum(score.letter_leaks for score in done)
+    kept = sum(score.bullets_kept for score in done)
+    bullets_total = sum(score.bullets_total for score in done)
 
-    passed = (
-        len(done) == len(scores)
-        and f1 >= F1_THRESHOLD
-        and false_strong_rate <= FALSE_STRONG_THRESHOLD
-        and leaks <= LEAKAGE_THRESHOLD
-    )
+    grounding_ok = leaks <= LEAKAGE_THRESHOLD and letter_leaks <= LEAKAGE_THRESHOLD
+    if adversarial:
+        # F1 and the false-"strong" rate measure whatever answered the sampling
+        # calls. Against a scripted adversary that is the script, so gating on
+        # them would report a keyword heuristic as a model regression.
+        passed = len(done) == len(scores) and grounding_ok and kept >= MIN_KEPT_ADVERSARIAL
+    else:
+        passed = (
+            len(done) == len(scores)
+            and f1 >= F1_THRESHOLD
+            and false_strong_rate <= FALSE_STRONG_THRESHOLD
+            and grounding_ok
+        )
 
     if as_json:
         print(
@@ -373,6 +442,10 @@ def report(scores: list[CaseScore], *, as_json: bool) -> int:
                     "f1": round(f1, 3),
                     "false_strong_rate": round(false_strong_rate, 4),
                     "tailor_leaks": leaks,
+                    "letter_leaks": letter_leaks,
+                    "bullets_kept": kept,
+                    "bullets_total": bullets_total,
+                    "adversarial": adversarial,
                     "passed": passed,
                     "per_case": [score.__dict__ for score in scores],
                 },
@@ -395,12 +468,21 @@ def report(scores: list[CaseScore], *, as_json: bool) -> int:
         for note in score.notes:
             print(f"{'':22}   · {note}")
     print("-" * 74)
-    print(f"requirement F1        {f1:.3f}   (threshold ≥ {F1_THRESHOLD})")
+    informational = "   (informational — measures the sampler)" if adversarial else ""
+    print(f"requirement F1        {f1:.3f}   (threshold ≥ {F1_THRESHOLD}){informational}")
     print(
         f"false 'strong' rate   {false_strong_rate:.3f}   "
-        f"(threshold ≤ {FALSE_STRONG_THRESHOLD}) [{false_strong_total}/{strong_total}]"
+        f"(threshold ≤ {FALSE_STRONG_THRESHOLD}) [{false_strong_total}/{strong_total}]{informational}"
     )
     print(f"tailor leakage        {leaks}       (threshold ≤ {LEAKAGE_THRESHOLD})")
+    letter_paragraphs = sum(score.letter_paragraphs for score in done)
+    print(
+        f"letter leakage        {letter_leaks}       "
+        f"(threshold ≤ {LEAKAGE_THRESHOLD}) [{letter_leaks}/{letter_paragraphs} paragraphs]"
+    )
+    # Zero leakage is also what a verifier that rejects everything reports.
+    floor = f"(threshold ≥ {MIN_KEPT_ADVERSARIAL})" if adversarial else "(not gated)"
+    print(f"suggestions kept      {kept}       {floor} [{kept}/{bullets_total} bullets]")
     print(f"\n{'PASS' if passed else 'FAIL'}: {len(done)}/{len(scores)} cases completed")
     return 0 if passed else 1
 
@@ -416,6 +498,15 @@ def main() -> int:
     parser.add_argument("--record", help="directory to write the model responses into")
     parser.add_argument("--replay", help="directory of recorded responses to answer from")
     parser.add_argument("--json", action="store_true", help="machine-readable output")
+    parser.add_argument(
+        "--adversarial",
+        action="store_true",
+        help=(
+            "the sampler fabricates on purpose (scripts/fabricating_sampler.py): "
+            "gate on leakage and on keeping the honest suggestions, and report "
+            "F1 and the false-'strong' rate as informational"
+        ),
+    )
     return run(parser.parse_args())
 
 

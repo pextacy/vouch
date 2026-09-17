@@ -5,20 +5,21 @@ stdout is the JSON-RPC channel and nothing else. Every write goes through
 interleaved partial lines would corrupt the stream) and flushes, because a
 buffered response is a response the host never sees.
 
-Responses above the host's 512 KiB soft cap are handed over as a file-transport
-pointer instead of being pushed through the pipe.
+A response above the host's 512 KiB soft cap is refused rather than spilled to a
+temp file: every payload this engine produces is bounded well below the cap,
+and a CV-derived body on disk would break the one
+storage rule the product makes — CV content lives in the user's Anna storage and
+nowhere else.
 """
 
 from __future__ import annotations
 
 import json
-import os
 import sys
-import tempfile
 import threading
 from typing import Any, Final, TextIO
 
-#: Per-message soft cap enforced by the Agent (docs/api-notes.md §2).
+#: Per-message soft cap enforced by the Agent.
 MAX_STDIO_MESSAGE_BYTES: Final[int] = 512 * 1024
 
 _LOCK: Final[threading.Lock] = threading.Lock()
@@ -32,27 +33,29 @@ def log(message: str) -> None:
 def write_frame(message: dict[str, Any], *, stdout: TextIO | None = None) -> None:
     out = stdout if stdout is not None else sys.stdout
     payload = json.dumps(message, ensure_ascii=False, separators=(",", ":"))
-    if len(payload.encode("utf-8")) > MAX_STDIO_MESSAGE_BYTES:
-        payload = _spill_to_file(message, payload)
+    size = len(payload.encode("utf-8"))
+    if size > MAX_STDIO_MESSAGE_BYTES:
+        replacement = _oversized(message, size)
+        if replacement is None:
+            return  # a notification nobody is waiting for: drop it
+        payload = json.dumps(replacement, ensure_ascii=False, separators=(",", ":"))
     with _LOCK:
         out.write(payload + "\n")
         out.flush()
 
 
-def _spill_to_file(message: dict[str, Any], payload: str) -> str:
-    """Write the body to a temp file and return the pointer envelope."""
-    fd, path = tempfile.mkstemp(suffix=".json", prefix="receipts-resp-")
-    try:
-        with os.fdopen(fd, "w", encoding="utf-8") as handle:
-            handle.write(payload)
-    except Exception:
-        os.close(fd)
-        raise
-    log(f"response exceeded {MAX_STDIO_MESSAGE_BYTES} B — using file transport")
-    return json.dumps(
-        {"jsonrpc": "2.0", "id": message.get("id"), "__file_transport": path},
-        ensure_ascii=False,
-    )
+def _oversized(message: dict[str, Any], size: int) -> dict[str, Any] | None:
+    """Replace a too-large frame with an error the caller can act on.
+
+    Writing the body to a temp file would put CV-derived text on disk, which
+    this engine never does. The size itself is the bug — every action's payload
+    is bounded — so it is reported as one instead of being worked around.
+    """
+    log(f"response of {size} B exceeds the {MAX_STDIO_MESSAGE_BYTES} B stdio cap — refusing")
+    req_id = message.get("id")
+    if req_id is None:
+        return None
+    return error(req_id, -32603, "response exceeded the host's 512 KiB message cap")
 
 
 def response(req_id: Any, result: Any) -> dict[str, Any]:

@@ -7,20 +7,14 @@
  * `PreviewBanner`. Without that, the whole UI would be undevelopable outside
  * the harness.
  *
- * Every signature here is recorded in docs/api-notes.md §5. Do not add a call
- * without adding the method to `manifest.ui.host_api` — `anna-app validate
- * --strict` greps this file and will fail the build.
+ * Do not add a call without adding the method to `manifest.ui.host_api` —
+ * `anna-app validate --strict` greps this file and will fail the build.
  */
 
 import { createStub } from "./stub";
-import type { ProgressEvent } from "./types";
 
 /** SDK module served by the host; the CSP allow-lists this origin. */
 const SDK_URL = "/static/anna-apps/_sdk/latest/index.js";
-
-export interface JobHandle {
-  jobId: string;
-}
 
 export interface InvokeAsyncOptions {
   onProgress?: (event: { seq: number; type: string; data: unknown }) => void;
@@ -148,15 +142,3 @@ function isEnvelope(value: unknown): value is { ok: boolean; result?: unknown; e
   return "result" in candidate || "error" in candidate;
 }
 
-/** Normalise the many shapes a progress event can arrive in. */
-export function readProgress(event: unknown): ProgressEvent | null {
-  if (!event || typeof event !== "object") return null;
-  const candidate = event as { data?: unknown };
-  const data = (candidate.data ?? event) as Partial<ProgressEvent>;
-  if (typeof data.stage !== "string") return null;
-  return {
-    stage: data.stage,
-    pct: typeof data.pct === "number" ? data.pct : 0,
-    ...(data.partial ? { partial: data.partial } : {}),
-  };
-}

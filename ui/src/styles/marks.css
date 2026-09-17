@@ -44,10 +44,50 @@
   content: " ]";
 }
 
-/* The sweep: clip-path from 0 to 100% width, staggered per requirement. */
+/* The sweep: clip-path from 0 to 100% width, staggered per requirement.
+ *
+ * The stagger is a class rather than an inline custom property: the bundle CSP
+ * is `style-src 'self'`, which drops a `style` attribute, and a dropped one
+ * would sweep every mark at once. */
 .mark--sweep {
   animation: marker-sweep var(--sweep-duration) var(--sweep-ease) both;
-  animation-delay: calc(var(--sweep-index, 0) * var(--sweep-stagger));
+}
+
+.mark--sweep-1 {
+  animation-delay: calc(1 * var(--sweep-stagger));
+}
+.mark--sweep-2 {
+  animation-delay: calc(2 * var(--sweep-stagger));
+}
+.mark--sweep-3 {
+  animation-delay: calc(3 * var(--sweep-stagger));
+}
+.mark--sweep-4 {
+  animation-delay: calc(4 * var(--sweep-stagger));
+}
+.mark--sweep-5 {
+  animation-delay: calc(5 * var(--sweep-stagger));
+}
+.mark--sweep-6 {
+  animation-delay: calc(6 * var(--sweep-stagger));
+}
+.mark--sweep-7 {
+  animation-delay: calc(7 * var(--sweep-stagger));
+}
+.mark--sweep-8 {
+  animation-delay: calc(8 * var(--sweep-stagger));
+}
+.mark--sweep-9 {
+  animation-delay: calc(9 * var(--sweep-stagger));
+}
+.mark--sweep-10 {
+  animation-delay: calc(10 * var(--sweep-stagger));
+}
+.mark--sweep-11 {
+  animation-delay: calc(11 * var(--sweep-stagger));
+}
+.mark--sweep-12 {
+  animation-delay: calc(12 * var(--sweep-stagger));
 }
 
 @keyframes marker-sweep {

@@ -1,4 +1,4 @@
-"""Pydantic twins of the TypeScript interfaces in ``docs.md §4``.
+"""Pydantic twins of the TypeScript interfaces in ``docs/docs.md §4``.
 
 Two families live here:
 

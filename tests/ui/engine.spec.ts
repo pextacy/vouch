@@ -10,7 +10,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { connect, isPreview } from "../../ui/src/lib/anna";
-import { EngineFailure, health, parseCvText, runMatch } from "../../ui/src/lib/engine";
+import { EngineFailure, health, letter, parseCvText, runMatch, tailor } from "../../ui/src/lib/engine";
 import { engineToolId } from "../../ui/src/lib/ids";
 import { EXAMPLE_POSTING } from "../../ui/src/lib/example";
 
@@ -106,5 +106,37 @@ describe("run_match", () => {
     await expect(pending).rejects.toSatisfy(
       (error: unknown) => error instanceof EngineFailure && error.code === "cancelled",
     );
+  });
+});
+
+/**
+ * Preview matches are matches.
+ *
+ * The stub used to hand back the recorded example unchanged, id and all, so
+ * every preview run produced a match called "example" — and a tracker row
+ * pointing at it reopened the read-only example instead of the user's own
+ * match, hiding Accept, Skip, Edit and the tone switch behind a route that
+ * looked right. A fresh identity per run is what keeps preview mode a
+ * rehearsal rather than a diorama.
+ */
+describe("preview identity", () => {
+  it("gives every run its own match id", async () => {
+    const doc = await parseCvText(CV_TEXT);
+    const first = await runMatch({ cv: doc, postingText: EXAMPLE_POSTING, locale: "en" });
+    const second = await runMatch({ cv: doc, postingText: EXAMPLE_POSTING, locale: "en" });
+
+    expect(first.id).not.toBe("example");
+    expect(second.id).not.toBe(first.id);
+  });
+
+  it("stamps the tailored bullets and the letter with the match they belong to", async () => {
+    const doc = await parseCvText(CV_TEXT);
+    const match = await runMatch({ cv: doc, postingText: EXAMPLE_POSTING, locale: "en" });
+
+    const bullets = await tailor(doc, match, "en");
+    const written = await letter(doc, match, { tone: "plain", length: "short", locale: "en" });
+
+    expect(bullets.match_id).toBe(match.id);
+    expect(written.match_id).toBe(match.id);
   });
 });

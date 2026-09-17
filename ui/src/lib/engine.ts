@@ -11,7 +11,7 @@
  *
  * A CV file arrives as base64 chunks over the sync channel: the host reader
  * caps a JSON-RPC line at 2 MiB and async invoke args at 64 KB, so a 2 MB PDF
- * fits in neither (docs/api-notes.md §6).
+ * fits in neither.
  */
 
 import { runtime, unwrap, type AnnaRuntime, type InvokeAsyncOptions } from "./anna";
@@ -76,7 +76,6 @@ function failure(code: ErrorCode, message: string, retriable = false): EngineFai
  * is reported as ungranted even though the production dispatcher gates the
  * `tools` namespace on the tool-id allow-list we do declare. This alias keeps
  * the linter useful for every other namespace instead of turning it off.
- * See docs/api-notes.md §5.
  */
 function jobs(host: AnnaRuntime): AnnaRuntime["tools"] {
   return host.tools;
@@ -207,10 +206,18 @@ async function pollJob<T>(
   signal?: AbortSignal,
 ): Promise<T> {
   let seq = 0;
+  // The same ceiling the job itself was given. A job stuck in `queued` because
+  // the Agent went away would otherwise leave the progress screen spinning for
+  // as long as the window stays open.
+  const deadline = Date.now() + JOB_TIMEOUT_MS;
   for (;;) {
     if (signal?.aborted) {
       await tools.cancelJob({ jobId, reason: "user cancelled" });
       throw failure("cancelled", "cancelled");
+    }
+    if (Date.now() > deadline) {
+      await tools.cancelJob({ jobId, reason: "client deadline" }).catch(() => undefined);
+      throw failure("internal_error", "the engine took too long", true);
     }
     const snapshot = unwrap<JobSnapshot>(await tools.getJob({ jobId, sinceSeq: seq }));
     for (const event of snapshot.progress ?? []) {
@@ -275,6 +282,17 @@ export async function health(): Promise<{ healthy: boolean; version: string; sam
   return invokeSync({ action: "health" });
 }
 
+/**
+ * Ask the engine to drop what it still holds in memory.
+ *
+ * Called from "Delete all my data". Best effort by design: storage is the
+ * record, this is a buffered upload and a cached posting, and neither outlives
+ * the process.
+ */
+export async function forget(): Promise<void> {
+  await invokeSync({ action: "forget" });
+}
+
 export async function parseCvText(text: string): Promise<CVDoc> {
   return invokeSync<CVDoc>({ action: "parse_cv", source: "text", text });
 }
@@ -300,19 +318,27 @@ export async function parseCvFile(
   const chunks = sliceChunks(base64);
   const uploadId = `up-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
-  for (let index = 0; index < chunks.length; index += 1) {
-    await invokeSync({
-      action: "upload_chunk",
-      upload_id: uploadId,
-      index,
-      total: chunks.length,
-      data_b64: chunks[index],
-      ...(index === 0 ? { filename: file.name } : {}),
-    });
-    onProgress?.({ sent: index + 1, total: chunks.length });
-  }
+  try {
+    for (let index = 0; index < chunks.length; index += 1) {
+      await invokeSync({
+        action: "upload_chunk",
+        upload_id: uploadId,
+        index,
+        total: chunks.length,
+        data_b64: chunks[index],
+        ...(index === 0 ? { filename: file.name } : {}),
+      });
+      onProgress?.({ sent: index + 1, total: chunks.length });
+    }
 
-  return invokeSync<CVDoc>({ action: "parse_cv", source, upload_id: uploadId });
+    // `parse_cv` consumes the buffer on success; only a failure leaves it.
+    return await invokeSync<CVDoc>({ action: "parse_cv", source, upload_id: uploadId });
+  } catch (error) {
+    // Half a CV is still a CV. It would age out of the engine's buffer in ten
+    // minutes on its own; ten minutes is nine longer than it needs to be.
+    await forget().catch(() => undefined);
+    throw error;
+  }
 }
 
 function sourceOf(file: File): "pdf" | "docx" | null {
@@ -416,11 +442,14 @@ export async function exportDocx(args: {
   company?: string | null;
   role?: string | null;
   locale: Locale;
+  /** Sent so the engine can re-verify a suggestion the user edited by hand. */
+  cv?: CVDoc;
 }): Promise<ExportResult> {
   return invokeSync<ExportResult>({
     action: "export_docx",
     ...(args.tailor ? { tailor_result: args.tailor } : {}),
     ...(args.letter ? { letter_result: args.letter } : {}),
+    ...(args.cv ? { cv: args.cv } : {}),
     ...(args.company ? { company: args.company } : {}),
     ...(args.role ? { role: args.role } : {}),
     locale: args.locale,

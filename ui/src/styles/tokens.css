@@ -1,4 +1,4 @@
-/* Design tokens — docs.md §8.
+/* Design tokens — docs/docs.md §8.
  *
  * The direction is a recruiter's desk: cool blue-grey paper, navy ink, pencil
  * blue for interaction, and exactly one bold thing — the highlighter mark that
@@ -19,6 +19,11 @@
   --marker-fill: var(--marker);
   --pencil: #2f55d4;
   --pencil-soft: #eaeffb;
+  --on-pencil: #ffffff;
+  /* What sits *on* the pencil. Light mode's pencil is dark enough for white;
+     dark mode's is a pale blue, where white reads at 2.3:1 — below AA on the
+     app's primary action. The ink of the page is the contrast there. */
+  --on-pencil: #ffffff;
   --tab: #e4e9f1;
 
   /* — type — */
@@ -81,6 +86,7 @@
     --marker-fill: rgb(244 234 58 / 38%);
     --pencil: #8ea6ff;
     --pencil-soft: #2a3450;
+    --on-pencil: #14192a;
     --tab: #2b3549;
   }
 }
@@ -107,5 +113,6 @@
   --marker-fill: rgb(244 234 58 / 38%);
   --pencil: #8ea6ff;
   --pencil-soft: #2a3450;
+  --on-pencil: #14192a;
   --tab: #2b3549;
 }

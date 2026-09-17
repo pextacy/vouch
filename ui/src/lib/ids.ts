@@ -4,7 +4,7 @@
  * `anna-app apps publish` (and `anna-app dev`) resolve the `bundled:` handles
  * in manifest.json to minted ids and write `bundle/anna-tool-ids.js`, which
  * sets `window.__ANNA_TOOL_IDS__`. Reading it here means a minted id never has
- * to be pasted into source — see docs/api-notes.md §1.
+ * to be pasted into source.
  */
 
 declare global {

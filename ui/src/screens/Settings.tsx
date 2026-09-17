@@ -14,7 +14,7 @@ import { TrashIcon } from "../components/Icons";
 import { locale, t } from "../i18n";
 import {
   changeLocale,
-  changeTheme,
+  chooseTheme,
   cv,
   deleteEverything,
   theme,
@@ -79,7 +79,7 @@ export function Settings() {
               type="radio"
               name="theme"
               checked={theme.value === value}
-              onChange={() => changeTheme(value)}
+              onChange={() => void chooseTheme(value)}
             />
             {t(`settings.theme.${value}`)}
           </label>

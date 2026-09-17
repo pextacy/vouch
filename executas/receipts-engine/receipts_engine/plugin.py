@@ -5,7 +5,7 @@ One tool method, ``engine``, with an ``action`` discriminator. One Executa row
 per app is the pattern the platform expects; adding a tool per behaviour would
 mean a new catalogue entry every time the product grows a verb.
 
-Three rules from ``docs/api-notes.md §2`` govern everything below:
+Three rules of the Executa protocol govern everything below:
 
 1. **stdout is protocol-only.** Logs go to stderr through
    :func:`~receipts_engine.host.frames.log`. One stray ``print`` ends the
@@ -31,10 +31,10 @@ from . import __version__
 from .errors import EngineError
 from .host.context import InvokeContext, bind_invoke
 from .host.frames import error, log, response, write_frame
-from .host.sampling import PROTOCOL_V2, SamplingClient
+from .host.sampling import PROTOCOL_V1, PROTOCOL_V2, SamplingClient
 from .llm import LlmClient, TokenBudget
 from .parse.cv import parse_cv
-from .pipeline import run_match, tailor_bullets, write_letter
+from .pipeline import clear_requirement_cache, run_match, tailor_bullets, write_letter
 from .schemas import CVDoc, LetterResult, MatchResult, TailorResult
 from .uploads import UploadBuffer
 
@@ -43,6 +43,10 @@ TOOL_NAME: Final[str] = "engine"
 #: run_match may sit through two model calls; the UI drives it through
 #: ``tools.invokeAsync``, whose job deadline is what really applies.
 _LONG_TOOL_TIMEOUT_S: Final[int] = 900
+
+#: Concurrent invokes. Each one may park on a sampling reply, so the reader
+#: thread keeps dispatching those replies itself (see :func:`main`).
+_INVOKE_WORKERS: Final[int] = 4
 
 _sampling = SamplingClient()
 _uploads = UploadBuffer()
@@ -105,7 +109,8 @@ MANIFEST: Final[dict[str, Any]] = {
                 "`run_match` (check a job posting against the CV — the primary function), "
                 "`tailor` (rewrite CV bullets for this posting), "
                 "`letter` (write a grounded cover letter), "
-                "`export_docx` (render the accepted output as a DOCX)."
+                "`export_docx` (render the accepted output as a DOCX), "
+                "`forget` (drop everything this process still holds in memory)."
             ),
             "parameters": [
                 {
@@ -115,6 +120,7 @@ MANIFEST: Final[dict[str, Any]] = {
                     "required": True,
                     "enum": [
                         "health",
+                        "forget",
                         "upload_chunk",
                         "parse_cv",
                         "run_match",
@@ -169,7 +175,10 @@ MANIFEST: Final[dict[str, Any]] = {
                 {
                     "name": "cv",
                     "type": "object",
-                    "description": "run_match / tailor / letter: the CVDoc returned by parse_cv.",
+                    "description": (
+                        "run_match / tailor / letter: the CVDoc returned by parse_cv. "
+                        "export_docx: optional, re-checks hand-edited lines against it."
+                    ),
                     "required": False,
                 },
                 {
@@ -264,6 +273,22 @@ def _action_health(_args: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _action_forget(_args: dict[str, Any]) -> dict[str, Any]:
+    """Drop everything the process is still holding for this user.
+
+    "Delete all my data" removes the CV and the matches from storage, but an
+    abandoned upload lives in this process for another ten minutes and the
+    requirement cache keeps a posting's wording for a month. Neither survives
+    a restart, and neither is written to disk — but "deleted" has to mean
+    deleted now, not deleted eventually.
+    """
+    uploads = len(_uploads)
+    cached = clear_requirement_cache()
+    _uploads.clear()
+    log(f"forget: dropped {uploads} pending upload(s) and {cached} cached posting(s)")
+    return {"uploads_dropped": uploads, "cached_postings_dropped": cached}
+
+
 def _action_upload_chunk(args: dict[str, Any]) -> dict[str, Any]:
     return dict(
         _uploads.add_chunk(
@@ -349,18 +374,29 @@ def _action_export_docx(args: dict[str, Any]) -> dict[str, Any]:
     if tailor is None and letter is None:
         raise EngineError("invalid_args", "export_docx needs tailor_result or letter_result")
 
-    filename, content_b64 = build_docx(
+    # The CV is optional: without it the document still renders, it just cannot
+    # re-check a line the user edited before accepting.
+    cv = _as_model(args.get("cv"), CVDoc, "cv") if args.get("cv") else None
+
+    filename, content_b64, unverified = build_docx(
         tailor=tailor,
         letter=letter,
         company=_as_str(args.get("company")),
         role=_as_str(args.get("role")),
         locale=_locale(args),
+        cv=cv,
     )
-    return {"filename": filename, "content_b64": content_b64, "mime": MIME}
+    return {
+        "filename": filename,
+        "content_b64": content_b64,
+        "mime": MIME,
+        "unverified": unverified,
+    }
 
 
 _SYNC_ACTIONS: Final[dict[str, Any]] = {
     "health": _action_health,
+    "forget": _action_forget,
     "upload_chunk": _action_upload_chunk,
     "parse_cv": _action_parse_cv,
     "export_docx": _action_export_docx,
@@ -504,7 +540,7 @@ def _handle_initialize(req_id: Any, params: dict[str, Any]) -> dict[str, Any]:
     return response(
         req_id,
         {
-            "protocolVersion": protocol if protocol in {"1.1", "2.0"} else "2.0",
+            "protocolVersion": protocol if protocol in {PROTOCOL_V1, PROTOCOL_V2} else PROTOCOL_V2,
             "serverInfo": {"name": MANIFEST["display_name"], "version": __version__},
             "client_capabilities": {"sampling": {}} if protocol == PROTOCOL_V2 else {},
             "capabilities": {},
@@ -512,19 +548,29 @@ def _handle_initialize(req_id: Any, params: dict[str, Any]) -> dict[str, Any]:
     )
 
 
-def _handle_message(line: str) -> None:
+def _read_message(line: str) -> dict[str, Any] | None:
+    """Parse one stdin line, answering the host directly if it is unparsable."""
     try:
         message = json.loads(line)
     except json.JSONDecodeError as exc:
         write_frame(error(None, -32700, f"parse error: {exc}"))
-        return
-    if not isinstance(message, dict):
-        return
+        return None
+    return message if isinstance(message, dict) else None
 
-    # A frame without `method` is the host answering one of our reverse RPCs.
-    if "method" not in message:
-        if not _sampling.dispatch_response(message):
-            log(f"unmatched response id={message.get('id')!r}")
+
+def _is_response(message: dict[str, Any]) -> bool:
+    """A frame without ``method`` is the host answering one of our reverse RPCs."""
+    return "method" not in message
+
+
+def _dispatch_response(message: dict[str, Any]) -> None:
+    if not _sampling.dispatch_response(message):
+        log(f"unmatched response id={message.get('id')!r}")
+
+
+def _handle_message(message: dict[str, Any]) -> None:
+    if _is_response(message):
+        _dispatch_response(message)
         return
 
     method = message.get("method")
@@ -560,14 +606,24 @@ def _handle_message(line: str) -> None:
 
 def main() -> None:
     log(f"{MANIFEST['display_name']} v{__version__} ready ({MANIFEST['name']})")
-    # Invokes block on sampling replies that arrive on this very loop, so they
-    # must not run on the reader thread.
-    pool = ThreadPoolExecutor(max_workers=4, thread_name_prefix="invoke")
+    # Invokes block on sampling replies that arrive on this very pipe, so they
+    # must not run on the reader thread. The replies themselves must not run on
+    # the pool either: with every worker parked on a sampling future, a queued
+    # reply would wait behind the very calls it is there to release, and the
+    # whole process would sit idle until each one timed out.
+    pool = ThreadPoolExecutor(max_workers=_INVOKE_WORKERS, thread_name_prefix="invoke")
     try:
         for raw in sys.stdin:
             line = raw.strip()
-            if line:
-                pool.submit(_handle_message, line)
+            if not line:
+                continue
+            message = _read_message(line)
+            if message is None:
+                continue
+            if _is_response(message):
+                _dispatch_response(message)
+            else:
+                pool.submit(_handle_message, message)
     finally:
         pool.shutdown(wait=False, cancel_futures=True)
         _loop.call_soon_threadsafe(_loop.stop)
