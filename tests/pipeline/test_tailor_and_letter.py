@@ -13,7 +13,7 @@ import pytest
 from receipts_engine.errors import EngineError
 from receipts_engine.llm import LlmClient, TokenBudget
 from receipts_engine.parse.cv import parse_cv
-from receipts_engine.pipeline import tailor_bullets, write_letter
+from receipts_engine.pipeline import resolve_placeholders, tailor_bullets, write_letter
 from receipts_engine.schemas import (
     CVDoc,
     Evidence,
@@ -247,20 +247,84 @@ async def test_a_grounded_letter_keeps_its_citations(cv: CVDoc, match: MatchResu
     assert letter.paragraphs[1].line_ids == [go_line]
 
 
-async def test_placeholders_are_reported_for_the_warning(cv: CVDoc, match: MatchResult) -> None:
+async def test_placeholders_are_reported_only_when_still_unresolved(
+    cv: CVDoc, match: MatchResult
+) -> None:
+    """The warning lists what the *user* must replace, not what the app filled.
+
+    `[Company]` is known — it came from the posting — so it is substituted and
+    must not be reported; `[Hiring Manager]` is not, so it must be.
+    """
     go_line = _line_containing(cv, "Go")
     sampling = FakeSampling(
         [
             {
                 "paragraphs": [
-                    {"text": "Dear [Hiring Manager], I am writing about the role at [Company].", "line_ids": []},
+                    {"text": "Dear [Hiring Manager], I am writing about the [Role] role at [Company].", "line_ids": []},
                     {"text": "I built reconciliation services in Go.", "line_ids": [go_line]},
                 ]
             }
         ]
     )
     letter = await write_letter(_client(sampling), cv=cv, match=match)
-    assert letter.placeholders == ["[Company]", "[Hiring Manager]"]
+    assert letter.placeholders == ["[Hiring Manager]"]
+
+
+async def test_the_opening_names_the_company_and_survives_verification(
+    cv: CVDoc, match: MatchResult
+) -> None:
+    """The defect this design replaced.
+
+    When the prompt handed the model the real employer, the model wrote it, the
+    verifier could not ground it against a CV that has never heard of the
+    company the user is applying *to*, and the whole opening was repaired away
+    — so the letter began mid-argument with no greeting and no addressee. The
+    model now writes placeholders it cannot get wrong, and the app fills them.
+    """
+    go_line = _line_containing(cv, "Go")
+    sampling = FakeSampling(
+        [
+            {
+                "paragraphs": [
+                    {"text": "I am writing about the [Role] role at [Company].", "line_ids": []},
+                    {"text": "I built reconciliation services in Go.", "line_ids": [go_line]},
+                ]
+            }
+        ]
+    )
+    letter = await write_letter(_client(sampling), cv=cv, match=match)
+
+    assert len(sampling.requests) == 1, "the opening should not have needed a repair call"
+    # Stored with its placeholders: what the verifier approved is what is kept.
+    assert letter.paragraphs[0].text == "I am writing about the [Role] role at [Company]."
+    # And nothing is left for the user to replace by hand.
+    assert letter.placeholders == []
+    # Resolved only at the point of use.
+    assert resolve_placeholders(
+        letter.paragraphs[0].text, company="Northwind", role="Senior Backend Engineer"
+    ) == "I am writing about the Senior Backend Engineer role at Northwind."
+
+
+async def test_the_model_is_never_given_the_employer_to_leak(
+    cv: CVDoc, match: MatchResult
+) -> None:
+    """A name the model is not told is a name it cannot get wrong."""
+    go_line = _line_containing(cv, "Go")
+    sampling = FakeSampling(
+        [
+            {
+                "paragraphs": [
+                    {"text": "I built reconciliation services in Go.", "line_ids": [go_line]},
+                ]
+            }
+        ]
+    )
+    await write_letter(_client(sampling), cv=cv, match=match)
+
+    sent = sampling.requests[0]
+    prompt = str(sent.get("system_prompt", "")) + str(sent.get("messages", ""))
+    assert "Northwind" not in prompt
+    assert "Senior Backend Engineer" not in prompt
 
 
 async def test_a_paragraph_with_an_invented_number_is_repaired(cv: CVDoc, match: MatchResult) -> None:

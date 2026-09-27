@@ -11,7 +11,16 @@
   gap: var(--space-1);
 }
 
+/* The CV's own sentence, in the CV's own face.
+ *
+ * The app sets quoted source text in the serif and its own sentences in the
+ * grotesque (docs.md §8.4) — the interview brief, the recurring report and
+ * the ledger all quote lines that way. This pane had both halves in the
+ * grotesque, which made the document and the proposal look like the same
+ * kind of thing. Now the pair reads as what it is: your line, then ours. */
 .bullet__original {
+  font-family: var(--font-doc);
+  line-height: var(--leading-doc);
   color: var(--graphite);
   max-width: var(--measure);
 }

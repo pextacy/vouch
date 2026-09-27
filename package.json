@@ -1,7 +1,7 @@
 {
   "name": "receipts",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.3.0",
   "description": "Receipts — tailor every application, invent nothing. An Anna App that checks a job posting against your CV line by line.",
   "license": "MIT",
   "type": "module",
@@ -16,6 +16,7 @@
     "test:ui": "vitest run",
     "test:engine": "cd executas/receipts-engine && uv run --extra dev pytest ../../tests -q",
     "a11y": "pnpm build && node scripts/a11y.mjs",
+    "type": "pnpm build && node scripts/typography.mjs",
     "screenshots": "pnpm build && node scripts/screenshots.mjs",
     "lint:engine": "cd executas/receipts-engine && uv run --extra dev ruff check . && uv run --extra dev mypy receipts_engine",
     "eval": "cd executas/receipts-engine && uv run --extra dev python ../../scripts/eval_match.py ../../fixtures/golden",

@@ -23,6 +23,7 @@ const ERROR_CODES = [
   "sampling_unavailable",
   "upload_expired",
   "invalid_args",
+  "rate_limited",
   "internal_error",
   "host_unavailable",
   "url_fetch_failed",
@@ -152,6 +153,23 @@ const DYNAMIC_FAMILIES: Record<string, string[]> = {
   "tracker.status.": ["drafted", "applied", "interview", "offer", "closed"],
   "settings.theme.": ["system", "light", "dark"],
   "cv.warning.": ["multi_column_suspected", "tables_flattened", "truncated"],
+  // Two families over the same union: what the audit found, and what it asks
+  // the user for. Both are keyed by `CvFindingKind`, so both have to stay in
+  // step with the engine's `CvFindingKind` literal.
+  "audit.kind.": ["skill_unevidenced", "title_unevidenced", "date_conflict"],
+  "audit.ask.": ["skill_unevidenced", "title_unevidenced", "date_conflict"],
+  // Keyed by `BriefRisk` and `ClaimSource`: the interview brief's verdicts
+  // are phrased here, never in the engine, for the same reason as above.
+  // `BriefRisk` minus `proved`: a proved requirement gets no sentence at all,
+  // because the section heading and the highlighter under it already say it.
+  "brief.risk.": [
+    "no_evidence",
+    "self_asserted",
+    "listed_not_shown",
+    "self_added",
+    "related_only",
+  ],
+  "brief.source.": ["bullet", "letter"],
 };
 
 describe("every string is rendered by something", () => {
@@ -181,5 +199,34 @@ describe("every string is rendered by something", () => {
       (key) => !dynamic.has(key) && !SOURCE.includes(`"${key}"`),
     );
     expect(orphans).toEqual([]);
+  });
+});
+
+// ─── Two silent failure modes ─────────────────────────────────────────
+//
+// Both of these break without anything throwing: a Turkish sentence that
+// dropped its `{count}` renders with a hole in it, and a `t("key")` nothing
+// defines renders the key itself. Neither shows up in a type check and
+// neither is visible unless someone happens to read that screen in that
+// language.
+
+describe("placeholders survive translation", () => {
+  const tokens = (value: string): string[] =>
+    [...value.matchAll(/\{(\w+)\}/g)].map((match) => match[1] as string).sort();
+
+  it.each(Object.keys(en).filter((key) => /\{\w+\}/.test(en[key] as string)))(
+    "%s keeps its placeholders in Turkish",
+    (key) => {
+      expect(tokens(tr[key] as string)).toEqual(tokens(en[key] as string));
+    },
+  );
+});
+
+describe("every key a screen asks for exists", () => {
+  it("resolves every literal t(\"…\") in the source", () => {
+    // `\bt(` rather than `t(`: `exportCvDocument("full")` ends in a `t(` too.
+    const asked = [...SOURCE.matchAll(/\bt\(\s*"([a-z0-9_.]+)"/g)].map((m) => m[1] as string);
+    const missing = [...new Set(asked)].filter((key) => !(key in en));
+    expect(missing).toEqual([]);
   });
 });

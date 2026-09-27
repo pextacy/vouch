@@ -249,6 +249,36 @@ def test_posting_vocabulary_may_not_supply_a_tool() -> None:
     )
 
 
+def test_posting_vocabulary_may_not_supply_a_tool_the_lexicon_never_heard_of() -> None:
+    """The leak the concept list closed.
+
+    The rule used to be "allowed unless the lexicon knows it", so a product the
+    lexicon had never heard of was allowed *because* it was unknown — and a
+    posting names the tools it wants. Every new SaaS name reopened the hole.
+    """
+    assert not ok(
+        "Administered Zyntherio for the sales team",
+        ["Administered the CRM for the sales team"],
+        posting_vocab=["Zyntherio administration"],
+    )
+
+
+def test_posting_vocabulary_may_not_supply_an_employer() -> None:
+    assert not ok(
+        "Built payment services at Globex",
+        ["Built payment reconciliation services"],
+        posting_vocab=["Experience of the scale Globex operates at"],
+    )
+
+
+def test_posting_vocabulary_may_still_supply_a_turkish_concept() -> None:
+    assert ok(
+        "Paydaşlarla birlikte raporlama süreçlerini yürüttüm",
+        ["Ürün ve satış ekipleriyle rapor hazırladım"],
+        posting_vocab=["Paydaş yönetimi ve raporlama"],
+    )
+
+
 def test_posting_vocabulary_may_not_supply_a_number() -> None:
     assert not ok(
         "Delivered 99.9% uptime",
@@ -365,4 +395,38 @@ def test_a_custom_lexicon_replaces_the_default() -> None:
     ],
 )
 def test_common_fabrications_are_all_rejected(text: str) -> None:
+    assert not ok(text)
+
+
+# ─── Sentence openers are grammar, not employers ──────────────────────
+#
+# The sentence-initial rule forgives a single capitalised word, which left
+# "Since I applied…" — the natural first line of a follow-up note — read as a
+# two-word proper noun and dropped a paragraph that was fully grounded. The
+# rule is narrower by exactly the function words below, so a phrase is only
+# discarded when *every* word in it is one of them.
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Since I migrated the reporting pipeline to PostgreSQL",
+        "After I migrated the reporting pipeline to PostgreSQL",
+        "While I migrated the reporting pipeline to PostgreSQL",
+        "Recently I migrated the reporting pipeline to PostgreSQL",
+    ],
+)
+def test_a_sentence_opener_before_a_pronoun_is_not_a_proper_noun(text: str) -> None:
+    assert ok(text)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Since Globex I migrated the reporting pipeline to PostgreSQL",
+        "After Initech I migrated the reporting pipeline to PostgreSQL",
+        "Since the merger with Umbrella I migrated the pipeline",
+    ],
+)
+def test_an_employer_after_the_opener_is_still_a_claim(text: str) -> None:
     assert not ok(text)

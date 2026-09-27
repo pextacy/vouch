@@ -1,0 +1,53 @@
+/* Findings read as a list of questions, the same shape as the gap sheet —
+   because they are the same thing asked from the other direction. No cards,
+   no severity colours: a count of twelve in red would be a verdict on the
+   person, and the whole point is that each one is answerable. */
+
+.audit__count {
+  color: var(--graphite);
+  max-width: var(--measure);
+}
+
+.finding {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-6) 0;
+}
+
+.finding__claim {
+  font-size: var(--size-m);
+  --track: 0;
+  font-weight: 500;
+  margin: 0;
+  max-width: var(--measure);
+}
+
+.finding__ask {
+  color: var(--graphite);
+  max-width: var(--measure);
+}
+
+.finding__chips {
+  gap: var(--space-2);
+}
+
+.finding__answer {
+  max-width: var(--measure);
+}
+
+.finding__label {
+  font-size: var(--size-xs);
+  color: var(--graphite);
+}
+
+.finding__input {
+  min-height: 84px;
+  font-family: var(--font-doc);
+  line-height: var(--leading-doc);
+}
+
+.finding__saved {
+  max-width: var(--measure);
+  color: var(--graphite);
+}

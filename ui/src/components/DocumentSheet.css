@@ -18,7 +18,9 @@
 
 .sheet__title {
   font-family: var(--font-ui);
+  line-height: var(--leading-ui);
   font-size: var(--size-s);
+  --track: 0;
   font-weight: 500;
   color: var(--graphite);
 }

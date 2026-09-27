@@ -1,0 +1,99 @@
+/* A reading list, not a dashboard.
+
+   This screen is opened on a phone in a lobby ten minutes before the thing it
+   is named after, so it is one column of prose with dividers — no cards, no
+   severity colours, no counters in circles. The only mark on the page is the
+   highlighter over a line that genuinely backs a requirement, which is the
+   same thing it means everywhere else in the app. */
+
+.brief__section {
+  padding-top: var(--space-6);
+}
+
+.brief__notice,
+.brief__count {
+  max-width: var(--measure);
+}
+
+.brief__notice {
+  border-inline-start: 3px solid var(--rule);
+  padding-inline-start: var(--space-3);
+  color: var(--graphite);
+}
+
+.brief {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-6) 0;
+}
+
+.brief__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.brief__requirement {
+  font-size: var(--size-m);
+  font-weight: 500;
+  margin: 0;
+  max-width: var(--measure);
+}
+
+/* Which requirements decide the application, said in words rather than in a
+   coloured badge — the rule the status labels follow. */
+.brief__must {
+  flex: none;
+  color: var(--graphite);
+}
+
+.brief__verdict {
+  color: var(--graphite);
+  max-width: var(--measure);
+}
+
+.brief__lines,
+.brief__claims {
+  max-width: var(--measure);
+}
+
+.brief__line + .brief__line {
+  margin-top: var(--space-3);
+}
+
+/* Everything quoted here is a document surface: the user's CV line, or the
+   sentence that was sent. Serif is what separates "what was written" from the
+   app's own voice, the same split as the CV sheet and the letter. */
+.brief__quote {
+  font-family: var(--font-doc);
+  line-height: var(--leading-doc);
+  margin: 0;
+}
+
+.brief__chips {
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+  align-items: center;
+}
+
+.brief__claim + .brief__claim {
+  margin-top: var(--space-3);
+}
+
+.brief__claims {
+  border-inline-start: 1px solid var(--rule);
+  padding-inline-start: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.brief__loose {
+  padding: var(--space-3) 0;
+  max-width: var(--measure);
+}
+
+.brief__actions {
+  padding-top: var(--space-8);
+}

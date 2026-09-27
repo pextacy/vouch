@@ -9,8 +9,16 @@
 
 import { beforeAll, describe, expect, it } from "vitest";
 
-import { connect, isPreview } from "../../ui/src/lib/anna";
-import { EngineFailure, health, letter, parseCvText, runMatch, tailor } from "../../ui/src/lib/engine";
+import { connect, isPreview, runtime } from "../../ui/src/lib/anna";
+import {
+  EngineFailure,
+  health,
+  letter,
+  parseCvFile,
+  parseCvText,
+  runMatch,
+  tailor,
+} from "../../ui/src/lib/engine";
 import { engineToolId } from "../../ui/src/lib/ids";
 import { EXAMPLE_POSTING } from "../../ui/src/lib/example";
 
@@ -62,6 +70,91 @@ describe("parse_cv", () => {
   it("marks a short CV as not worth retrying", async () => {
     const failure = await parseCvText("nope").catch((error: unknown) => error as EngineFailure);
     expect(failure.retriable).toBe(false);
+  });
+});
+
+/**
+ * `parseCvFile` reads bytes with `FileReader`, which is a DOM API that Node
+ * does not have — without this shim the upload path throws before it makes a
+ * single call, and a test asserting "we never call forget" passes because it
+ * never called anything at all.
+ */
+class NodeFileReader {
+  result: string | null = null;
+  onload: (() => void) | null = null;
+  onerror: (() => void) | null = null;
+
+  readAsDataURL(blob: Blob): void {
+    void blob
+      .arrayBuffer()
+      .then((bytes) => {
+        this.result = `data:application/octet-stream;base64,${Buffer.from(bytes).toString("base64")}`;
+        this.onload?.();
+      })
+      .catch(() => this.onerror?.());
+  }
+}
+
+/**
+ * Record the engine args of every sync invoke made while `body` runs, and
+ * optionally fail one action the way the host reports an engine failure.
+ */
+async function recordInvokes(
+  body: () => Promise<void>,
+  failOn?: string,
+): Promise<Record<string, unknown>[]> {
+  const calls: Record<string, unknown>[] = [];
+  const anna = runtime();
+  const original = anna.tools.invoke.bind(anna.tools);
+  const previousReader = (globalThis as Record<string, unknown>).FileReader;
+  (globalThis as Record<string, unknown>).FileReader = NodeFileReader;
+  anna.tools.invoke = async (request: Parameters<typeof original>[0]) => {
+    const args = (request.args ?? {}) as Record<string, unknown>;
+    calls.push(args);
+    if (args.action === failOn) {
+      throw { code: "tool_failed", message: "unreadable_file" };
+    }
+    return original(request);
+  };
+  try {
+    await body();
+  } finally {
+    anna.tools.invoke = original;
+    (globalThis as Record<string, unknown>).FileReader = previousReader;
+  }
+  return calls;
+}
+
+describe("uploads", () => {
+  it("cleans up only the upload that failed, not every buffer", async () => {
+    // The failure path used to call `forget`, which drops every pending upload
+    // and the whole requirement cache. A second window mid-upload would have
+    // lost its file to someone else's failed one.
+    const calls = await recordInvokes(async () => {
+      const file = new File(["not a real pdf"], "cv.pdf", { type: "application/pdf" });
+      await parseCvFile(file).catch(() => undefined);
+    }, "parse_cv");
+
+    const actions = calls.map((args) => args.action);
+    expect(actions).toContain("upload_chunk");
+    expect(actions).toContain("discard_upload");
+    expect(actions).not.toContain("forget");
+  });
+
+  it("names an upload with an unguessable id", async () => {
+    const calls = await recordInvokes(async () => {
+      const file = new File(["not a real pdf"], "cv.pdf", { type: "application/pdf" });
+      await parseCvFile(file).catch(() => undefined);
+    });
+    const ids = calls
+      .map((args) => args.upload_id)
+      .filter((id): id is string => typeof id === "string");
+
+    // The id is the only thing that entitles a caller to those bytes, so it
+    // carries a UUID's randomness rather than a timestamp and Math.random.
+    expect(ids[0]).toMatch(
+      /^up-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+    );
   });
 });
 

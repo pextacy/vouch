@@ -1,0 +1,31 @@
+/* Tabs, because that is what the header already uses for "which of these am I
+   looking at" — and a dropdown would hide the fact that there is more than one
+   CV from the person who most needs to remember it. */
+
+.cvswitch {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: var(--measure);
+}
+
+.cvswitch__row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.cvswitch__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.cvswitch__note {
+  margin: 0;
+}
+
+.cvswitch .button--quiet {
+  padding-inline: var(--space-2);
+}

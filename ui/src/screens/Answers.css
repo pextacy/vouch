@@ -1,0 +1,85 @@
+/* Questions read as a list of headings with an answer under each, because
+   that is the shape of the form the user is copying into. The two refusals
+   are set in the same size and colour as an ordinary answer: making "your CV
+   can't back this" quieter than a written answer would suggest it is a lesser
+   outcome, and on this screen it is the point. */
+
+.answers__form,
+.answers__note,
+.answers__read {
+  max-width: var(--measure);
+}
+
+.answers__label {
+  font-size: var(--size-xs);
+  color: var(--graphite);
+}
+
+.answers__input {
+  min-height: 160px;
+  font-family: var(--font-doc);
+  line-height: var(--leading-doc);
+}
+
+.answers__questions > li + li {
+  border-top: 0;
+}
+
+.answers__question {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-1) 0;
+}
+
+.answers__questionText {
+  flex: 1 1 auto;
+  color: var(--graphite);
+}
+
+.answers__drop {
+  padding: 0;
+  min-height: 0;
+  flex: 0 0 auto;
+}
+
+.qa {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-6) 0;
+}
+
+.qa__question {
+  font-size: var(--size-m);
+  --track: 0;
+  font-weight: 500;
+  margin: 0;
+  max-width: var(--measure);
+}
+
+.qa__sentence {
+  font-family: var(--font-doc);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.qa__refused,
+.qa__noEvidence,
+.qa__saved,
+.qa__dropped,
+.qa__answer {
+  max-width: var(--measure);
+}
+
+.qa__refused,
+.qa__noEvidence,
+.qa__saved {
+  color: var(--graphite);
+}
+
+.qa__input {
+  min-height: 84px;
+  font-family: var(--font-doc);
+  line-height: var(--leading-doc);
+}

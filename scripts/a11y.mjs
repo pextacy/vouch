@@ -28,7 +28,14 @@ import { fileURLToPath } from "node:url";
 
 import { chromium } from "playwright-core";
 
-import { goTo, runLiveMatch } from "./preview-flow.mjs";
+import {
+  answerAGap,
+  goTo,
+  runExtraCv,
+  runExtraMatches,
+  runLiveMatch,
+  runSamePostingAgain,
+} from "./preview-flow.mjs";
 
 const ROOT = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const BUNDLE = join(ROOT, "bundle");
@@ -60,21 +67,123 @@ const THEMES = ["light", "dark"];
  * clicked. They come last on purpose — the flow saves a CV, and the screens
  * above are the ones a user sees before they have one.
  */
+/**
+ * A document with something in it the CV cannot back, for the check screen.
+ *
+ * Written against the CV `runLiveMatch` saves, so the first line passes and
+ * the second does not: a result list with both shapes on it is the one worth
+ * measuring contrast and tap targets on.
+ */
+const CHECK_DOCUMENT = [
+  "Built payment reconciliation services in Go.",
+  "Cut checkout latency by 40% and led a team of 12 at Globex.",
+].join("\n");
+
+const FORM_QUESTIONS = [
+  "Describe your experience with payment reconciliation.",
+  "Why do you want to work here?",
+  "Describe your Kubernetes work.",
+].join("\n");
+
 const SCREENS = [
   { name: "onboarding", hash: "#/" },
   { name: "add-cv", hash: "#/cv/add" },
+  { name: "cv-audit", hash: "#/match/example", then: "#/cv/audit" },
   { name: "new-match", hash: "#/new" },
   { name: "match-map", hash: "#/match/example" },
   { name: "tailor", hash: "#/match/example", then: "#/tailor" },
   { name: "letter", hash: "#/match/example", then: "#/letter" },
+  { name: "gaps", hash: "#/match/example", then: "#/gaps" },
+  { name: "interview", hash: "#/match/example", then: "#/brief" },
   { name: "tracker", hash: "#/matches" },
   { name: "your-data", hash: "#/data" },
+  // The correction, and then the picker it opens. The picker turns the whole
+  // CV sheet into buttons — the one place in the app where a reading surface
+  // becomes a control — so it is audited for focus, contrast and tap target
+  // like every other control.
+  { name: "match-live", live: "@match" },
+  { name: "match-picking", live: "@match", open: ".req__dispute" },
+  // The one artefact built to leave the account. Audited with the role title
+  // both off and on, because the toggle is the consent model.
+  { name: "share", live: "/share" },
+  { name: "share-with-role", live: "/share", open: ".share__roleToggle" },
   { name: "tailor-live", live: "/tailor" },
   { name: "tailor-editing", live: "/tailor", open: ".bullet .button--quiet" },
   { name: "letter-live", live: "/letter" },
+  // After the letter, so the brief has claims to quote as well as receipts.
+  { name: "interview-live", live: "/brief" },
   { name: "tracker-live", live: "/matches" },
   { name: "tracker-confirming", live: "/matches", open: ".trackrow__delete" },
+  { name: "recurring", live: "/recurring", extraMatches: 2 },
+  // The wordings list only exists once it is expanded, and it is the part of
+  // the screen a user leans on to disagree with the grouping.
+  { name: "recurring-wordings", live: "/recurring", open: ".recur__toggle", extraMatches: 2 },
+  // The comparison picks the two most recent by default, so it has an answer
+  // on screen without a click — which is also how a user first meets it.
+  { name: "compare", live: "/compare", extraMatches: 2 },
+  // The ledger quotes CV lines in the document face and marks the ones that
+  // carried an application, so it is the screen where the highlighter has to
+  // clear contrast against a serif at body size.
+  { name: "ledger", live: "/cv/ledger", extraMatches: 2 },
+  // Walked after a gap has been answered, because the empty version of this
+  // screen is the half nobody reads: what needs auditing is the list of
+  // requirements with the user's own new sentence quoted under each one.
+  { name: "since", live: "/since", answerGap: true },
+  // The note itself, which only exists once the CV has gained a line since
+  // the application went out — the refusal is the other half and is reached
+  // by the same screen with nothing answered.
+  { name: "followup", live: "/followup", answerGap: true },
+  // The shelf-wide version of the same question, audited after a gap has been
+  // answered — before that it is an empty state, which is the half of the
+  // screen nobody has to read carefully.
+  { name: "worth", live: "/worth", answerGap: true },
+  // The payoff screen, and the only one that needs two runs of one posting:
+  // audited after a gap has been answered *and* the posting re-run, because
+  // the credited row — the app's one claim about the user's own writing — is
+  // the part that has to read clearly.
+  { name: "changed", live: "/changed", answerGap: true, sameAgain: true },
+  // Three questions on purpose: one the CV answers, one it declines to answer
+  // because the question is about what the candidate wants, and one it hands
+  // back. All three render differently and all three ship in one payload.
+  { name: "answers", live: "/answers", fill: { selector: "#answers-input", text: FORM_QUESTIONS } },
+  {
+    name: "answers-result",
+    live: "/answers",
+    fill: { selector: "#answers-input", text: FORM_QUESTIONS },
+    open: ".answers__run",
+  },
+  // The document check has two screens in one: the paste form, and the list
+  // of flagged sentences that only exists after a document has been read.
+  // Auditing the form alone would audit the half nobody reads.
+  { name: "check", live: "/check" },
+  {
+    name: "check-result",
+    live: "/check",
+    fill: { selector: "#check-document", text: CHECK_DOCUMENT },
+    open: ".check__run",
+  },
+  // Last, and in this order: adding a second CV switches the workspace, so
+  // every screen that needs the first CV's applications has already run.
+  { name: "cv-preview", live: "/cv/preview" },
+  { name: "profile", live: "/cv/profile" },
+  { name: "cv-profiles", live: "/data", extraCv: true },
+  { name: "cv-switch", live: "/cv/preview" },
 ];
+
+/**
+ * `--only=name,name` audits a subset.
+ *
+ * The flow is the slow part — every `live` screen replays a real run — and
+ * fixing one finding should not cost a full walk of twenty screens. The
+ * default is still everything, which is what CI and the Definition of Done
+ * mean by "clean".
+ */
+const ONLY = (process.argv.find((arg) => arg.startsWith("--only=")) ?? "")
+  .slice("--only=".length)
+  .split(",")
+  .map((name) => name.trim())
+  .filter(Boolean);
+const SELECTED = ONLY.length > 0 ? SCREENS.filter((screen) => ONLY.includes(screen.name)) : SCREENS;
 
 /** WCAG AA. Large text is ≥ 24px, or ≥ 18.66px when bold. */
 const CONTRAST_NORMAL = 4.5;
@@ -349,10 +458,42 @@ async function main() {
         const page = await context.newPage();
 
         let liveMatch = null;
-        for (const screen of SCREENS) {
+        let extraMatches = null;
+        let extraCv = null;
+        let gapAnswered = false;
+        let secondRun = null;
+        for (const screen of SELECTED) {
           if (screen.live) {
             liveMatch ??= await runLiveMatch(page, base);
-            await goTo(page, screen.live, ".screen");
+            // A screen that compares applications needs several of them. The
+            // recurring report says nothing below three, on purpose.
+            if (screen.extraMatches && !extraMatches) {
+              extraMatches = await runExtraMatches(page, base, screen.extraMatches);
+            }
+            // A second CV, for the switch and the list that names them.
+            if (screen.extraCv && !extraCv) {
+              extraCv = await runExtraCv(page, base);
+            }
+            // A CV line written after an application went out — the state
+            // "since you applied" exists for, and the only one nothing else
+            // in this flow produces.
+            if (screen.answerGap && !gapAnswered) {
+              gapAnswered = await answerAGap(page, base);
+            }
+            // And the same posting run again, which is what pairs two runs
+            // and gives "what changed" anything to compare.
+            if (screen.sameAgain && !secondRun) {
+              secondRun = await runSamePostingAgain(page, base);
+            }
+            // "@match" is the live match's own map — the one screen that
+            // needs a real, writable application under it, because the
+            // read-only example never offers a correction.
+            await goTo(page, screen.live === "@match" ? liveMatch : screen.live, ".screen");
+            // Some screens only have a result to audit once they have been
+            // given something to work on.
+            if (screen.fill) {
+              await page.fill(screen.fill.selector, screen.fill.text);
+            }
             // A control that only exists once something is open — the edit
             // textarea, the delete confirmation — is still a control. A miss
             // here means the flow stopped short, not that the rule passed.

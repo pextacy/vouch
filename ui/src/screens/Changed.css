@@ -1,0 +1,107 @@
+/* A record of two readings, not a scoreboard. No arrows, no deltas, no green
+   and red: each row says what the first run called it and what the second one
+   does, in the same words the match map uses. The only mark is on a demand
+   that now has a receipt, which is what the highlighter means everywhere. */
+
+/* The sentence that answers the screen, given the same weight as the match
+   map's summary (`SummarySentence`): one step up from the body, in ink under
+   a graphite lede. It is the line a user reads and screenshots. */
+.changed__read {
+  font-size: var(--size-m);
+  max-width: var(--measure);
+  text-wrap: pretty;
+}
+
+.changed__wrote {
+  max-width: var(--measure);
+}
+
+/* Peers are separated by space, the way the interview brief separates its
+   two halves; the rule is saved for a section that changes register (below).
+   A divider above every heading reads as a table of contents, not a page. */
+.changed__section {
+  max-width: var(--measure);
+  padding-top: var(--space-6);
+}
+
+.changed__section h2 {
+  font-size: var(--size-m);
+  --track: 0;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* The last section is a caveat about how the two runs were read rather than
+   a result, so it gets the one rule on the page. */
+.changed__section--quiet {
+  margin-top: var(--space-8);
+  border-top: 1px solid var(--rule);
+  color: var(--graphite);
+}
+
+.changed__lede {
+  max-width: var(--measure);
+}
+
+.change {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-6) 0;
+  max-width: var(--measure);
+}
+
+.change__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.change__subject {
+  font-size: var(--size-s);
+  font-weight: 500;
+  margin: 0;
+}
+
+.change__must {
+  color: var(--graphite);
+}
+
+.change__move {
+  margin: 0;
+}
+
+/* The one sentence in the app that credits the user's own writing for a
+   result. It is set flush and in ink: the rule below belongs to the evidence
+   it points at, and a second rule stacked above that one only printed a seam
+   down the margin. */
+.change__credit {
+  margin: 0;
+}
+
+.change__lines {
+  margin: 0;
+  padding-inline-start: var(--space-3);
+  border-inline-start: 2px solid var(--rule);
+  list-style: none;
+  width: 100%;
+}
+
+.change__quote {
+  font-family: var(--font-doc);
+  font-size: var(--size-s);
+  line-height: var(--leading-doc);
+  margin: 0;
+}
+
+.change__chips {
+  gap: var(--space-2);
+  align-items: center;
+  margin-top: var(--space-1);
+}
+
+.changed__actions {
+  margin-top: var(--space-8);
+}

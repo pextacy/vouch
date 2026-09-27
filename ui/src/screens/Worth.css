@@ -1,0 +1,70 @@
+/* A list of things to do, in the order they are worth doing. No badges, no
+   counters in circles: each row is a sentence with its denominator in it, and
+   the only emphasis is the one the tracker already uses — the role. */
+
+/* The sentence that answers the screen, given the same weight as the match
+   map's summary (`SummarySentence`): one step up from the body, in ink under
+   a graphite lede. It is the line a user reads and screenshots. */
+.worth__read {
+  font-size: var(--size-m);
+  max-width: var(--measure);
+  text-wrap: pretty;
+}
+
+.worth {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-6) 0;
+  max-width: var(--measure);
+}
+
+.worth__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.worth__role {
+  font-size: var(--size-l);
+  font-weight: 500;
+  margin: 0;
+}
+
+.worth__age,
+.worth__claim,
+.worth__must {
+  margin: 0;
+  max-width: var(--measure);
+}
+
+.worth__must {
+  color: var(--graphite);
+}
+
+/* The postings' own words, set as quotations rather than as the app's own
+   phrasing — the same treatment the recurring report gives them. */
+.worth__texts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-width: var(--measure);
+  margin: 0;
+  padding-inline-start: var(--space-3);
+  border-inline-start: 2px solid var(--rule);
+  list-style: none;
+  font-family: var(--font-doc);
+  line-height: var(--leading-doc);
+  color: var(--graphite);
+}
+
+.worth__chips {
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.worth__actions {
+  margin-top: var(--space-8);
+}

@@ -15,7 +15,8 @@ import "./AppHeader.css";
 export function AppHeader() {
   const current = route.value.name;
   const onTracker = current === "tracker";
-  const onCv = current === "cv-add" || current === "cv-preview";
+  const onCv =
+    current === "cv-add" || current === "cv-preview" || current === "cv-ledger";
 
   return (
     <header class="appbar">

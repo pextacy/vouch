@@ -44,3 +44,7 @@
   flex: none;
   min-width: 44px;
 }
+
+.trackrow__prepare {
+  flex: none;
+}

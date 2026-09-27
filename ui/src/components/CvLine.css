@@ -14,6 +14,7 @@
 
 .cvline__id {
   font-family: var(--font-ui);
+  line-height: var(--leading-ui);
   font-size: var(--size-xs);
   color: var(--graphite);
   padding-top: 0.2em;
@@ -22,4 +23,42 @@
 
 .cvline__text {
   min-width: 0;
+}
+
+/* Quiet: it is provenance, not a status. The line itself still reads first. */
+.cvline__added {
+  display: inline-block;
+  margin-inline-start: var(--space-2);
+  font-family: var(--font-ui);
+  line-height: var(--leading-ui);
+  font-size: var(--size-xs);
+  color: var(--graphite);
+}
+
+/* While the user is picking the lines that cover a requirement.
+ *
+ * A real button, so it keeps the shared focus ring and the keyboard; these
+ * rules only undo the chrome a button brings with it, because the line has to
+ * still read as a line of the document and not as a control. */
+.cvline--pickable {
+  width: 100%;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+  padding-inline: var(--space-2);
+  margin-inline: calc(var(--space-2) * -1);
+  border-radius: var(--radius-sheet);
+}
+
+.cvline--pickable:hover {
+  background: var(--tab);
+}
+
+.cvline--picked,
+.cvline--picked:hover {
+  background: var(--pencil-soft);
+  box-shadow: inset 3px 0 0 var(--pencil);
 }

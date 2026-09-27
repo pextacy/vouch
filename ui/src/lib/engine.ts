@@ -16,15 +16,31 @@
 
 import { runtime, unwrap, type AnnaRuntime, type InvokeAsyncOptions } from "./anna";
 import { ENGINE_METHOD, engineToolId } from "./ids";
+import type { ReplayItem } from "./recurring";
 import type {
+  AnswerResult,
+  CompareResult,
+  CvAudit,
   CVDoc,
+  CvExportMode,
+  CvExportResult,
+  DocumentCheck,
   EngineError,
   ErrorCode,
   ExportResult,
+  FollowupResult,
+  GapResult,
+  InterviewBrief,
+  LedgerResult,
   LetterResult,
   Locale,
   MatchResult,
+  ProfileResult,
   ProgressEvent,
+  RecurringResult,
+  RunDiff,
+  SinceResult,
+  WorthResult,
   TailorResult,
   Tone,
   Length,
@@ -117,6 +133,7 @@ const ENGINE_CODES = new Set<ErrorCode>([
   "cancelled",
   "upload_expired",
   "invalid_args",
+  "rate_limited",
   "internal_error",
 ]);
 
@@ -124,6 +141,8 @@ const RETRIABLE_CODES = new Set<ErrorCode>([
   "model_output_invalid",
   "sampling_unavailable",
   "upload_expired",
+  // Waiting is the whole fix, so "Try again" is the honest button.
+  "rate_limited",
   "internal_error",
   "host_unavailable",
 ]);
@@ -293,8 +312,171 @@ export async function forget(): Promise<void> {
   await invokeSync({ action: "forget" });
 }
 
+/** Drop one buffered upload. The id is what names it — and what permits it. */
+export async function discardUpload(uploadId: string): Promise<void> {
+  await invokeSync({ action: "discard_upload", upload_id: uploadId });
+}
+
 export async function parseCvText(text: string): Promise<CVDoc> {
   return invokeSync<CVDoc>({ action: "parse_cv", source: "text", text });
+}
+
+/**
+ * Read the CV against itself: no model, no tokens, no job.
+ *
+ * Set arithmetic in the engine, so it answers in milliseconds on the sync
+ * channel — and it is the one call in this app that works before the user has
+ * a posting to check.
+ */
+export async function auditCv(cv: CVDoc): Promise<CvAudit> {
+  return invokeSync<CvAudit>({ action: "audit_cv", cv });
+}
+
+/**
+ * Read a document the app did not write against the CV.
+ *
+ * The same deterministic pass `tailor` and `letter` already go through, so it
+ * is synchronous, free and instant — and it is the only call in this app that
+ * takes text the user wrote themselves and returns a verdict on it.
+ *
+ * `match` is optional and is not the subject of the check: it is there so the
+ * company and role the letter is addressed to are not read as claims about
+ * the candidate. Nothing sent here is stored, by the engine or by the UI.
+ */
+export async function checkDocument(args: {
+  cv: CVDoc;
+  document: string;
+  match?: MatchResult | null;
+  company?: string | null;
+  role?: string | null;
+}): Promise<DocumentCheck> {
+  return invokeSync<DocumentCheck>({
+    action: "check_document",
+    cv: args.cv,
+    document: args.document,
+    ...(args.match ? { match: args.match } : {}),
+    ...(args.company ? { company: args.company } : {}),
+    ...(args.role ? { role: args.role } : {}),
+  });
+}
+
+/**
+ * Group unproven requirements from many applications into recurring gaps.
+ *
+ * Synchronous and modelless like `audit_cv`: the grouping is lexicon work, not
+ * reasoning, so it costs the user nothing and can be re-run whenever the shelf
+ * of matches changes.
+ *
+ * Every requirement goes, not only the unproven ones — the engine needs the
+ * denominator to tell a real gap from a skill that is usually proved.
+ */
+export async function recurringGaps(items: ReplayItem[]): Promise<RecurringResult> {
+  return invokeSync<RecurringResult>({ action: "recurring_gaps", items });
+}
+
+/**
+ * Line up a few saved applications and say which one the CV can prove most of.
+ *
+ * The same replay feed `recurringGaps` takes, asked a different question, so
+ * there is one shape to keep true rather than two. Synchronous and modelless
+ * as well: the ranking is arithmetic over verdicts that already exist, which
+ * is why changing the selection can simply re-run it.
+ */
+export async function comparePostings(items: ReplayItem[]): Promise<CompareResult> {
+  return invokeSync<CompareResult>({ action: "compare_postings", items });
+}
+
+/**
+ * Which CV lines have carried an application, and which never have.
+ *
+ * Synchronous and modelless like `recurringGaps`, and fed by the same replay
+ * items, because the question is asked of citations those records already
+ * hold. The CV goes too: the interesting half of the answer is the lines no
+ * posting ever asked about, and only the document knows those exist.
+ */
+export async function lineLedger(cv: CVDoc, items: ReplayItem[]): Promise<LedgerResult> {
+  return invokeSync<LedgerResult>({ action: "line_ledger", cv, items });
+}
+
+/**
+ * Which saved applications the CV has since gained an answer for.
+ *
+ * `sinceApplied` asks this of one application; nobody with thirty of them is
+ * going to open thirty. Same replay feed as the other cross-application
+ * reads, synchronous and modelless like all of them.
+ */
+export async function worthRerunning(cv: CVDoc, items: ReplayItem[]): Promise<WorthResult> {
+  return invokeSync<WorthResult>({ action: "worth_rerunning", cv, items });
+}
+
+/**
+ * What changed between two runs of the same posting.
+ *
+ * Synchronous and modelless like the other reading actions: both runs are
+ * records the app already holds, so this is a comparison rather than an
+ * analysis. The CV goes too — the dates on its lines are what decide whether
+ * a gain can be credited to something the user wrote in between.
+ */
+export async function compareRuns(args: {
+  cv: CVDoc;
+  before: MatchResult;
+  after: MatchResult;
+}): Promise<RunDiff> {
+  return invokeSync<RunDiff>({
+    action: "compare_runs",
+    cv: args.cv,
+    before: args.before,
+    match: args.after,
+  });
+}
+
+/**
+ * What the CV has gained since this application went out.
+ *
+ * Synchronous and modelless like the rest of the reading actions: dates and a
+ * lexicon lookup over records that already exist. `sent_at` is the day the
+ * user marked it sent, when the record has one — the result says which clock
+ * it used rather than quietly picking one.
+ */
+export async function sinceApplied(args: {
+  cv: CVDoc;
+  match: MatchResult;
+  sentAt?: string | null;
+}): Promise<SinceResult> {
+  return invokeSync<SinceResult>({
+    action: "since_applied",
+    cv: args.cv,
+    match: args.match,
+    ...(args.sentAt ? { sent_at: args.sentAt } : {}),
+  });
+}
+
+/**
+ * What this application will be asked to back up, out loud.
+ *
+ * Synchronous and modelless like `audit_cv`: nothing is written here, so
+ * there is nothing to sample. Every sentence it returns is either a CV line
+ * or a sentence the verifier already passed.
+ *
+ * `tailor` carries only the bullets the user accepted — the brief is about
+ * what the interviewer is holding, not what the app once offered.
+ */
+export async function interviewBrief(args: {
+  cv: CVDoc;
+  match: MatchResult;
+  tailor?: TailorResult | null;
+  letter?: LetterResult | null;
+  /** Where the user said the match got it wrong — beside it, never merged. */
+  assertions?: { requirement_id: string; line_ids: string[] }[];
+}): Promise<InterviewBrief> {
+  return invokeSync<InterviewBrief>({
+    action: "interview_brief",
+    cv: args.cv,
+    match: args.match,
+    ...(args.tailor ? { tailor_result: args.tailor } : {}),
+    ...(args.letter ? { letter_result: args.letter } : {}),
+    ...(args.assertions?.length ? { assertions: args.assertions } : {}),
+  });
 }
 
 export interface UploadProgress {
@@ -316,7 +498,10 @@ export async function parseCvFile(
 
   const base64 = await toBase64(file);
   const chunks = sliceChunks(base64);
-  const uploadId = `up-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  // `crypto.randomUUID` rather than `Math.random`: the id is the only thing
+  // that entitles a caller to these bytes, so it is a capability, not a label.
+  // 122 random bits costs nothing and removes the question entirely.
+  const uploadId = `up-${crypto.randomUUID()}`;
 
   try {
     for (let index = 0; index < chunks.length; index += 1) {
@@ -336,7 +521,11 @@ export async function parseCvFile(
   } catch (error) {
     // Half a CV is still a CV. It would age out of the engine's buffer in ten
     // minutes on its own; ten minutes is nine longer than it needs to be.
-    await forget().catch(() => undefined);
+    //
+    // Only this upload, though. `forget()` empties every buffer and the whole
+    // requirement cache, which is a lot of collateral for one failed file —
+    // and wrong outright if the process ever serves more than one window.
+    await discardUpload(uploadId).catch(() => undefined);
     throw error;
   }
 }
@@ -416,6 +605,26 @@ export async function tailor(
   );
 }
 
+/**
+ * The questions for everything this match could not prove.
+ *
+ * A model call, so it runs as a job like `tailor` and `letter`. The engine
+ * returns an empty `items` list without calling the model at all when the CV
+ * already proves every requirement — that is a result worth showing, not an
+ * error.
+ */
+export async function gaps(
+  cv: CVDoc,
+  match: MatchResult,
+  locale: Locale,
+  signal?: AbortSignal,
+): Promise<GapResult> {
+  return invokeJob<GapResult>(
+    { action: "gaps", cv, match, locale },
+    { clientTag: "receipts:gaps", ...(signal ? { signal } : {}) },
+  );
+}
+
 export async function letter(
   cv: CVDoc,
   match: MatchResult,
@@ -433,6 +642,77 @@ export async function letter(
       ...(match.posting.title ? { role: match.posting.title } : {}),
     },
     { clientTag: "receipts:letter", ...(options.signal ? { signal: options.signal } : {}) },
+  );
+}
+
+/**
+ * A headline and an About section the CV can back.
+ *
+ * The one generated action with no match: there is no posting, so there is
+ * nothing to lend the text a concept and everything in it has to come from
+ * the CV. A model call, so it runs as a job.
+ */
+export async function profile(
+  cv: CVDoc,
+  options: { locale: Locale; signal?: AbortSignal },
+): Promise<ProfileResult> {
+  return invokeJob<ProfileResult>(
+    { action: "profile", cv, locale: options.locale },
+    { clientTag: "receipts:profile", ...(options.signal ? { signal: options.signal } : {}) },
+  );
+}
+
+/**
+ * The note after the silence — or the reasoned refusal to write one.
+ *
+ * A model call like the letter, so it runs as a job; unlike the letter it
+ * often costs nothing at all, because the engine decides from stored records
+ * whether there is anything worth sending before it samples anything.
+ */
+export async function followup(
+  cv: CVDoc,
+  match: MatchResult,
+  options: { locale: Locale; sentAt?: string | null; signal?: AbortSignal },
+): Promise<FollowupResult> {
+  return invokeJob<FollowupResult>(
+    {
+      action: "followup",
+      cv,
+      match,
+      locale: options.locale,
+      ...(options.sentAt ? { sent_at: options.sentAt } : {}),
+    },
+    { clientTag: "receipts:followup", ...(options.signal ? { signal: options.signal } : {}) },
+  );
+}
+
+/**
+ * Answer the free-text questions on an application form, from the CV alone.
+ *
+ * A job rather than a sync invoke: it is a model call with a repair pass
+ * behind it, the same shape as `letter`.
+ *
+ * `match` is optional and is never the subject. It is passed so the posting's
+ * own requirements can lend general concepts to the wording, exactly as they
+ * do for a cover letter — the *questions* lend nothing, because they are the
+ * one input here an employer controls.
+ */
+export async function answerQuestions(args: {
+  cv: CVDoc;
+  questions: string[];
+  match?: MatchResult | null;
+  locale: Locale;
+  signal?: AbortSignal;
+}): Promise<AnswerResult> {
+  return invokeJob<AnswerResult>(
+    {
+      action: "answer_question",
+      cv: args.cv,
+      questions: args.questions,
+      locale: args.locale,
+      ...(args.match ? { match: args.match } : {}),
+    },
+    { clientTag: "receipts:answers", ...(args.signal ? { signal: args.signal } : {}) },
   );
 }
 
@@ -454,6 +734,23 @@ export async function exportDocx(args: {
     ...(args.role ? { role: args.role } : {}),
     locale: args.locale,
   });
+}
+
+/**
+ * The stored CV as a document, or only the lines the user added to it.
+ *
+ * Synchronous and modelless: nothing is composed and nothing is verified,
+ * because every paragraph in the file is a line of the CV that produced it.
+ * It is the way out for the three answer loops that write into the CV — until
+ * it existed, a sentence the user added here could never reach the document
+ * an employer reads.
+ */
+export async function exportCv(
+  cv: CVDoc,
+  mode: CvExportMode,
+  locale: Locale,
+): Promise<CvExportResult> {
+  return invokeSync<CvExportResult>({ action: "export_cv", cv, mode, locale });
 }
 
 /**

@@ -39,22 +39,28 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Tracking belongs to the size, not to the tag (docs.md §8.4: -0.01em at
+   23 px and up, nothing below it). Headings read it from `--track`, so a
+   heading set smaller than its tag's default resets the tracking with it in
+   one declaration instead of remembering to. `scripts/typography.mjs`
+   measures this on the built bundle. */
 h1,
 h2,
 h3 {
   margin: 0;
   font-weight: 700;
   line-height: 1.25;
+  letter-spacing: var(--track, 0);
 }
 
 h1 {
   font-size: var(--size-xl);
-  letter-spacing: -0.01em;
+  --track: -0.01em;
 }
 
 h2 {
   font-size: var(--size-l);
-  letter-spacing: -0.01em;
+  --track: -0.01em;
 }
 
 h3 {
@@ -184,14 +190,24 @@ a {
   filter: none;
 }
 
+/* The one button in the app that cannot be undone.
+ *
+ * It was a copy of `--secondary` in everything but its hover, which meant
+ * "Delete all my data" and "Download your CV" sat next to each other looking
+ * identical. There is no red in this palette and there is not going to be
+ * one (docs.md §8.1 rules out traffic-light colour); the escalation is the
+ * ink the app already uses for the thing it takes most seriously — an error
+ * (`ErrorNotice`). A drawn ink outline at rest, filled on hover, so the
+ * weight rises as the pointer commits. */
 .button--danger {
   background: transparent;
-  border-color: var(--rule);
+  border-color: var(--ink);
   color: var(--ink);
 }
 
 .button--danger:hover:not(:disabled) {
-  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
   filter: none;
 }
 

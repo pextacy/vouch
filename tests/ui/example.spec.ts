@@ -10,6 +10,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  EXAMPLE_BRIEF,
   EXAMPLE_CV,
   EXAMPLE_LETTER,
   EXAMPLE_MATCH,
@@ -81,5 +82,73 @@ describe("example tailor and letter", () => {
   it("ties both results to the example match", () => {
     expect(EXAMPLE_TAILOR.match_id).toBe(EXAMPLE_MATCH.id);
     expect(EXAMPLE_LETTER.match_id).toBe(EXAMPLE_MATCH.id);
+  });
+});
+
+/**
+ * The recorded interview brief.
+ *
+ * It is the engine's own output for the fixtures above, pasted in — so the
+ * thing worth testing is that it still describes them. A brief quoting a
+ * sentence the example letter no longer contains would be the demo showing
+ * the user something the app did not produce.
+ */
+describe("example interview brief", () => {
+  const REQUIREMENT_IDS = new Set(EXAMPLE_MATCH.requirements.map((item) => item.id));
+  const items = [...EXAMPLE_BRIEF.risks, ...EXAMPLE_BRIEF.proved];
+
+  it("belongs to the example match and its CV", () => {
+    expect(EXAMPLE_BRIEF.match_id).toBe(EXAMPLE_MATCH.id);
+    expect(EXAMPLE_BRIEF.cv_hash).toBe(EXAMPLE_CV.hash);
+    expect(EXAMPLE_BRIEF.cv_changed).toBe(false);
+  });
+
+  it("names only requirements the match states", () => {
+    for (const item of items) {
+      expect(REQUIREMENT_IDS.has(item.requirement_id), item.requirement_id).toBe(true);
+    }
+  });
+
+  it("names each requirement once, on one side or the other", () => {
+    const named = items.map((item) => item.requirement_id);
+    expect(new Set(named).size).toBe(named.length);
+  });
+
+  it("calls proved exactly what the risks do not", () => {
+    for (const item of EXAMPLE_BRIEF.proved) expect(item.risk).toBe("proved");
+    for (const item of EXAMPLE_BRIEF.risks) expect(item.risk).not.toBe("proved");
+  });
+
+  it("cites only CV lines that exist", () => {
+    for (const item of items) {
+      for (const line of item.line_ids) expect(LINE_IDS.has(line), line).toBe(true);
+      for (const claim of item.claims) {
+        for (const line of claim.line_ids) expect(LINE_IDS.has(line), line).toBe(true);
+      }
+    }
+  });
+
+  it("cites no line for a requirement it says has no evidence", () => {
+    for (const item of items) {
+      if (item.risk === "no_evidence") expect(item.line_ids).toEqual([]);
+    }
+  });
+
+  it("quotes only sentences the user actually sent", () => {
+    const sent = new Set<string>([
+      ...EXAMPLE_TAILOR.bullets.map((bullet) => bullet.suggestion ?? ""),
+      ...EXAMPLE_LETTER.paragraphs.map((paragraph) => paragraph.text),
+    ]);
+    const claims = [...items.flatMap((item) => item.claims), ...EXAMPLE_BRIEF.loose_claims];
+    expect(claims.length).toBeGreaterThan(0);
+    for (const claim of claims) expect(sent.has(claim.text), claim.text).toBe(true);
+  });
+
+  it("never quotes a suggestion the verifier dropped", () => {
+    const dropped = EXAMPLE_TAILOR.bullets.filter((bullet) => !bullet.suggestion);
+    expect(dropped.length).toBeGreaterThan(0);
+    const originals = new Set(dropped.map((bullet) => bullet.original));
+    const claims = [...items.flatMap((item) => item.claims), ...EXAMPLE_BRIEF.loose_claims];
+    for (const claim of claims) expect(originals.has(claim.text)).toBe(false);
   });
 });

@@ -11,7 +11,10 @@
  */
 
 import type {
+  CvAudit,
   CVDoc,
+  GapResult,
+  InterviewBrief,
   LetterResult,
   MatchResult,
   TailorResult,
@@ -232,6 +235,187 @@ export const EXAMPLE_LETTER: LetterResult = {
     },
   ],
   placeholders: [],
+};
+
+/**
+ * The gap sheet for the recorded match: R6 (Kafka) and R8 (Terraform).
+ *
+ * Both card shapes are here on purpose, because both are common and they look
+ * nothing alike. R6 carries an angle the verifier could trace to L5; R8 has
+ * `angle: null`, which is what the engine returns whenever the CV holds nothing
+ * adjacent — the usual outcome, not a failure.
+ */
+export const EXAMPLE_GAPS: GapResult = {
+  version: 1,
+  match_id: "example",
+  items: [
+    {
+      requirement_id: "R6",
+      question:
+        "Has anything you built passed messages between services without you calling them directly?",
+      angle: "You ran the settlement workers across two regions.",
+      line_ids: ["L5"],
+      templated: false,
+    },
+    {
+      requirement_id: "R8",
+      question: "Have you ever written the configuration that creates infrastructure, not just used it?",
+      angle: null,
+      line_ids: [],
+      templated: false,
+    },
+  ],
+};
+
+/**
+ * The audit of the recorded CV.
+ *
+ * These are the findings `audit.py` actually produces for `EXAMPLE_CV`, checked
+ * by running it: the skills line (L9) names Docker, gRPC, Python and Redis, and
+ * no experience, project or certification line shows any of the four in use.
+ * Nothing is invented for the demo — if the example CV improved, this list
+ * would have to shrink with it.
+ */
+export const EXAMPLE_AUDIT: CvAudit = {
+  version: 1,
+  cv_hash: "example-cv-hash",
+  findings: [
+    { kind: "skill_unevidenced", subject: "docker", surface: "Docker", line_ids: ["L9"] },
+    { kind: "skill_unevidenced", subject: "grpc", surface: "gRPC", line_ids: ["L9"] },
+    { kind: "skill_unevidenced", subject: "python", surface: "Python", line_ids: ["L9"] },
+    { kind: "skill_unevidenced", subject: "redis", surface: "Redis", line_ids: ["L9"] },
+  ],
+};
+
+/**
+ * The interview brief for the recorded match.
+ *
+ * What `interview_brief()` returns for the fixtures above, run through the
+ * engine rather than written by hand — with every suggested bullet accepted,
+ * which is the premise the screen is showing: this is the application as it
+ * would have been sent. Nothing is invented for the demo, so improving the
+ * example CV would move this list too.
+ *
+ * Both halves are here because both are the point: R6 and R8 are what the CV
+ * cannot back, and the proved rows carry the sentences that were sent with
+ * the line numbers underneath them.
+ */
+export const EXAMPLE_BRIEF: InterviewBrief = {
+  version: 1,
+  match_id: "example",
+  cv_hash: "example-cv-hash",
+  cv_changed: false,
+  risks: [
+    { requirement_id: "R6", kind: "must", risk: "no_evidence", line_ids: [], claims: [] },
+    { requirement_id: "R8", kind: "nice", risk: "no_evidence", line_ids: [], claims: [] },
+  ],
+  proved: [
+    {
+      requirement_id: "R1",
+      kind: "must",
+      risk: "proved",
+      line_ids: ["L2"],
+      claims: [
+        {
+          source: "letter",
+          text: "I am writing about the Senior Backend Engineer role at Northwind Ledger. I have spent six years building payment infrastructure, which is the same problem your posting describes.",
+          line_ids: ["L2"],
+        },
+      ],
+    },
+    {
+      requirement_id: "R2",
+      kind: "must",
+      risk: "proved",
+      line_ids: ["L3"],
+      claims: [
+        {
+          source: "bullet",
+          text: "Built and ran production payment reconciliation services in Go serving 1,200 merchant accounts.",
+          line_ids: ["L3"],
+        },
+        {
+          source: "letter",
+          text: "At Acme Payments I built the reconciliation services in Go that handled 1,200 merchant accounts, and I migrated the reporting pipeline to PostgreSQL without downtime.",
+          line_ids: ["L3", "L4"],
+        },
+      ],
+    },
+    {
+      requirement_id: "R3",
+      kind: "must",
+      risk: "proved",
+      line_ids: ["L5"],
+      claims: [
+        {
+          source: "bullet",
+          text: "Operated settlement workers on Kubernetes across two regions.",
+          line_ids: ["L5"],
+        },
+        {
+          source: "letter",
+          text: "I ran those settlement workers on Kubernetes across two regions and led a team of four engineers through the on-call rotation that kept them up.",
+          line_ids: ["L5", "L6"],
+        },
+      ],
+    },
+    {
+      requirement_id: "R4",
+      kind: "must",
+      risk: "proved",
+      line_ids: ["L4"],
+      claims: [
+        {
+          source: "letter",
+          text: "At Acme Payments I built the reconciliation services in Go that handled 1,200 merchant accounts, and I migrated the reporting pipeline to PostgreSQL without downtime.",
+          line_ids: ["L3", "L4"],
+        },
+      ],
+    },
+    {
+      requirement_id: "R5",
+      kind: "must",
+      risk: "proved",
+      line_ids: ["L6"],
+      claims: [
+        {
+          source: "bullet",
+          text: "Led a team of 4 engineers and owned the on-call rotation for settlement.",
+          line_ids: ["L6"],
+        },
+        {
+          source: "letter",
+          text: "I ran those settlement workers on Kubernetes across two regions and led a team of four engineers through the on-call rotation that kept them up.",
+          line_ids: ["L5", "L6"],
+        },
+      ],
+    },
+    {
+      requirement_id: "R7",
+      kind: "nice",
+      risk: "proved",
+      line_ids: ["L3", "L7"],
+      claims: [
+        {
+          source: "bullet",
+          text: "Built and ran production payment reconciliation services in Go serving 1,200 merchant accounts.",
+          line_ids: ["L3"],
+        },
+        {
+          source: "letter",
+          text: "At Acme Payments I built the reconciliation services in Go that handled 1,200 merchant accounts, and I migrated the reporting pipeline to PostgreSQL without downtime.",
+          line_ids: ["L3", "L4"],
+        },
+      ],
+    },
+  ],
+  loose_claims: [
+    {
+      source: "letter",
+      text: "I would be glad to talk about how that experience maps onto what you are building. Thank you for your time.",
+      line_ids: [],
+    },
+  ],
 };
 
 export const EXAMPLE_POSTING = `Senior Backend Engineer — Northwind Ledger (Remote, EU)

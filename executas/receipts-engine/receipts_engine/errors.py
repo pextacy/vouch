@@ -20,12 +20,21 @@ ErrorCode = Literal[
     "cancelled",
     "upload_expired",
     "invalid_args",
+    "rate_limited",
     "internal_error",
 ]
 
 #: Codes whose failure is transient — the UI may offer "Try again".
 RETRIABLE: Final[frozenset[str]] = frozenset(
-    {"model_output_invalid", "sampling_unavailable", "upload_expired", "internal_error"}
+    {
+        "model_output_invalid",
+        "sampling_unavailable",
+        "upload_expired",
+        # Waiting is the fix, and the UI says how long — so "Try again" is the
+        # honest button here, not a dead end.
+        "rate_limited",
+        "internal_error",
+    }
 )
 
 _FALLBACK_MESSAGES: Final[dict[str, str]] = {
@@ -38,6 +47,7 @@ _FALLBACK_MESSAGES: Final[dict[str, str]] = {
     "cancelled": "Cancelled.",
     "upload_expired": "The upload buffer expired before it was used.",
     "invalid_args": "Arguments did not match the action contract.",
+    "rate_limited": "Too many runs in a short time; the allowance refills.",
     "internal_error": "Unexpected engine failure.",
 }
 

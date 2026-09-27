@@ -58,3 +58,49 @@
   outline: 2px solid var(--pencil);
   outline-offset: 2px;
 }
+
+/* The CVs, one per row: the name is an input because it is the user's own
+   word for their career and has to be changeable where it is read. */
+.cvlist {
+  max-width: var(--measure);
+}
+
+.cvlist__heading {
+  font-size: var(--size-s);
+  font-weight: 500;
+  margin: 0;
+}
+
+.cvlist__items {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cvlist__item {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+}
+
+.cvlist__name {
+  flex: 1 1 10rem;
+  min-width: 10rem;
+  min-height: 44px;
+}
+
+.cvlist__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 0 1 auto;
+}
+
+.cvlist__delete {
+  flex: none;
+  min-width: 44px;
+}

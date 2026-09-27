@@ -8,7 +8,9 @@
   color: var(--graphite);
   font-size: var(--size-xs);
   font-family: var(--font-ui);
-  line-height: 1.6;
+  /* The chip sits inside document surfaces but is app chrome, so it takes the
+     grotesque's leading rather than inheriting the serif's (docs.md §8.4). */
+  line-height: var(--leading-ui);
 }
 
 .chip--button {

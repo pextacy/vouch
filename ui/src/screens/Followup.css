@@ -1,0 +1,29 @@
+/* A short note on a sheet, and above it the two facts that justify sending
+   it: how long it has been, and what the note stands on. No marker anywhere —
+   nothing here is a receipt yet; it is a message about one. */
+
+.followup__age,
+.followup__stands {
+  max-width: var(--measure);
+}
+
+.followup__stands {
+  color: var(--graphite);
+}
+
+/* The one loud line: a name the reader has to replace before sending. */
+.followup__warning {
+  max-width: var(--measure);
+  border-inline-start: 3px solid var(--rule);
+  padding-inline-start: var(--space-3);
+}
+
+.followup__chips {
+  gap: var(--space-2);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.followup__actions {
+  margin-top: var(--space-6);
+}

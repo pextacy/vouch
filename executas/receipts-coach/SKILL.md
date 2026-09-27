@@ -1,7 +1,7 @@
 ---
 name: receipts-coach
 title: Receipts Coach
-version: 1.0.0
+version: 1.1.0
 description: >-
   Use when the user wants to check a job posting against their CV, tailor a CV
   to a job, or write a cover letter grounded in their real experience.

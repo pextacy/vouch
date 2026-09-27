@@ -33,4 +33,12 @@
 .cvedit__field {
   min-height: 84px;
   font-family: var(--font-doc);
+  line-height: var(--leading-doc);
+}
+
+/* The export sits between the document and the verbs that leave it: it is
+   about the sheet above, not about where to go next. */
+.cvexport {
+  padding-top: var(--space-4);
+  max-width: var(--measure);
 }

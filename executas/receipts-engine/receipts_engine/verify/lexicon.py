@@ -479,6 +479,31 @@ class TechLexicon:
         """
         return normalize_token(token) in self._ambiguous_keys
 
+    def surfaces(self, text: str) -> dict[str, str]:
+        """Every canonical term in ``text``, mapped to how ``text`` spells it.
+
+        :meth:`matches` answers "is this term here"; this answers "what did
+        they call it". The CV audit needs the second, because a finding is
+        shown to the person whose CV it is — telling someone their skills list
+        names "grpc" when they wrote "gRPC", or "kubernetes" when they wrote
+        "k8s", reads as the app not having looked properly.
+
+        Call it on **raw** text: the point is the capitalisation and spelling
+        that normalisation throws away.
+        """
+        words = text.split()
+        found: dict[str, str] = {}
+        for size in range(min(self._max_words, len(words)), 0, -1):
+            for index in range(len(words) - size + 1):
+                gram = " ".join(words[index : index + size])
+                key = normalize_token(gram)
+                if size == 1 and key in self._ambiguous_keys:
+                    continue
+                canonical = self._by_key.get(key)
+                if canonical and canonical not in found:
+                    found[canonical] = gram.strip(" \t,;:./|()[]")
+        return found
+
     def matches(self, text: str) -> set[str]:
         """Every canonical term appearing in ``text``.
 

@@ -1,0 +1,91 @@
+/* The checked document reads as a list of quotations, not as a report card.
+ *
+ * Each entry is the user's own sentence on a document surface, with the words
+ * it cannot back bracketed underneath in the same language the match map uses
+ * for a requirement with no evidence. No severity colour, no count in red: a
+ * flagged sentence is something to answer or to delete, and a screen that
+ * shouted at someone about their own CV would be read once and never again. */
+
+.check__form,
+.check__context,
+.check__privacy,
+.check__count,
+.check__masked {
+  max-width: var(--measure);
+}
+
+.check__label,
+.checked__label {
+  font-size: var(--size-xs);
+  color: var(--graphite);
+}
+
+.check__input {
+  min-height: 220px;
+  font-family: var(--font-doc);
+  line-height: var(--leading-doc);
+}
+
+.check__context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+/* Inside a sentence, so it carries no button padding of its own. */
+.check__contextToggle {
+  padding: 0;
+  min-height: 0;
+  font-size: inherit;
+}
+
+.check__count {
+  color: var(--graphite);
+}
+
+.checked {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-6) 0;
+}
+
+.checked__quote {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--sheet);
+  border-radius: var(--radius-sheet);
+  border-inline-start: 2px solid var(--rule);
+  font-family: var(--font-doc);
+  font-size: var(--size-s);
+  line-height: var(--leading-doc);
+  color: var(--ink);
+  max-width: var(--measure);
+}
+
+.checked__claims {
+  max-width: var(--measure);
+  color: var(--graphite);
+}
+
+/* The brackets are pseudo-elements, so without this a closing "]" wraps to a
+   line of its own and the phrase stops looking like one thing. */
+.checked__claim {
+  white-space: nowrap;
+}
+
+.checked__answer,
+.checked__saved {
+  max-width: var(--measure);
+}
+
+.checked__saved {
+  color: var(--graphite);
+}
+
+.checked__input {
+  min-height: 84px;
+  font-family: var(--font-doc);
+  line-height: var(--leading-doc);
+}

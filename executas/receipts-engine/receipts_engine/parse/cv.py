@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import io
 import re
+import zipfile
 from typing import Final
 
 from ..errors import EngineError
@@ -31,6 +32,19 @@ MIN_CV_CHARS: Final[int] = 200
 #: Keeps ``run_match`` args inside the host's 64 KB async-invoke cap and the
 #: CV inside its ~6k-token share of the sampling budget.
 MAX_CV_CHARS: Final[int] = 24_000
+
+#: A CV is one to four pages; ten is a long academic one. Sixty leaves that
+#: alone and still refuses to spend a minute of the *synchronous* invoke
+#: budget on a 2 MB file that declares fifty thousand pages — the cheapest way
+#: there is to wedge the plugin, since ``parse_cv`` cannot run as a job.
+MAX_PDF_PAGES: Final[int] = 60
+
+#: What a DOCX may weigh once unzipped. The file itself is capped at 2 MB, and
+#: compression is what turns that into a problem: a zip of repeated bytes
+#: expands by three orders of magnitude, and python-docx parses the expansion,
+#: not the file. 64 MB is far above any real CV and far below trouble.
+MAX_DOCX_UNPACKED_BYTES: Final[int] = 64 * 1024 * 1024
+MAX_DOCX_MEMBERS: Final[int] = 512
 
 _SECTION_PATTERNS: Final[list[tuple[Section, re.Pattern[str]]]] = [
     (
@@ -110,7 +124,11 @@ def parse_cv(
             raise EngineError("invalid_args", f"{source} source needs file bytes")
         if len(data) > MAX_FILE_BYTES:
             raise EngineError("file_too_large", details={"bytes": len(data)})
-        raw = _extract_pdf(data) if source == "pdf" else _extract_docx(data, warnings)
+        raw = (
+            _extract_pdf(data, warnings)
+            if source == "pdf"
+            else _extract_docx(data, warnings)
+        )
     else:
         raise EngineError("invalid_args", f"unknown source {source!r}")
 
@@ -149,7 +167,7 @@ def _as_language(value: str) -> Language:
 # ─── Extraction ───────────────────────────────────────────────────────
 
 
-def _extract_pdf(data: bytes) -> str:
+def _extract_pdf(data: bytes, warnings: list[Warning]) -> str:
     from pypdf import PdfReader
     from pypdf.errors import PdfReadError
 
@@ -165,7 +183,12 @@ def _extract_pdf(data: bytes) -> str:
                 raise
             except Exception as exc:
                 raise EngineError("unreadable_file", "the PDF is password protected") from exc
-        pages = [page.extract_text() or "" for page in reader.pages]
+        if len(reader.pages) > MAX_PDF_PAGES:
+            # Read the front of it rather than refusing: a real CV's content is
+            # in its first pages, and a user whose export carried a hundred
+            # blank pages should get their CV, not an error about the exporter.
+            warnings.append("truncated")
+        pages = [page.extract_text() or "" for page in reader.pages[:MAX_PDF_PAGES]]
     except EngineError:
         raise
     except (PdfReadError, ValueError, OSError) as exc:
@@ -173,11 +196,41 @@ def _extract_pdf(data: bytes) -> str:
     return "\n".join(pages)
 
 
+def _guard_docx_archive(data: bytes) -> None:
+    """Refuse a DOCX that would cost far more unzipped than it does on the wire.
+
+    python-docx parses the *expansion*, so the 2 MB ceiling on the upload says
+    nothing about what parsing it costs. Entity expansion is already off —
+    python-docx builds its parser with ``resolve_entities=False`` — so what is
+    left is plain compression: a couple of megabytes of repeated bytes become
+    gigabytes of ``document.xml``.
+
+    The sizes come from the central directory, which the archive declares about
+    itself. A file that lies about them does not get to spend the difference:
+    :mod:`zipfile` stops reading a member at its declared length and raises on
+    the CRC that no longer matches.
+    """
+    try:
+        with zipfile.ZipFile(io.BytesIO(data)) as archive:
+            members = archive.infolist()
+            unpacked = sum(info.file_size for info in members)
+    except (zipfile.BadZipFile, OSError) as exc:
+        raise EngineError("unreadable_file", details={"reason": type(exc).__name__}) from exc
+
+    if len(members) > MAX_DOCX_MEMBERS or unpacked > MAX_DOCX_UNPACKED_BYTES:
+        raise EngineError(
+            "file_too_large",
+            "the document unpacks to far more than its size suggests",
+            details={"unpacked_bytes": unpacked, "members": len(members)},
+        )
+
+
 def _extract_docx(data: bytes, warnings: list[Warning]) -> str:
     import docx
     from docx.table import Table
     from docx.text.paragraph import Paragraph
 
+    _guard_docx_archive(data)
     try:
         document = docx.Document(io.BytesIO(data))
     except Exception as exc:  # python-docx raises a grab-bag of types

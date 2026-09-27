@@ -1,0 +1,69 @@
+/* One gap per block, reading downward: what the posting asked, the question,
+   what the CV already has nearby, then the box to answer in. No cards — the
+   page is a list of questions, and a grid of boxes would make six of them look
+   like six rejections. */
+
+.gap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-6) 0;
+}
+
+.gap__requirement {
+  color: var(--graphite);
+  font-size: var(--size-xs);
+  max-width: var(--measure);
+}
+
+.gap__question {
+  font-size: var(--size-m);
+  --track: 0;
+  font-weight: 500;
+  margin: 0;
+  max-width: var(--measure);
+}
+
+/* The one sentence on this screen that claims anything about the user, so it
+   is set apart and it carries its citations — the same rule the letter's
+   paragraphs follow. */
+.gap__angle {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: var(--measure);
+  padding-inline-start: var(--space-3);
+  border-inline-start: 2px solid var(--rule);
+  color: var(--graphite);
+}
+
+.gap__chips {
+  gap: var(--space-2);
+}
+
+.gap__answer {
+  max-width: var(--measure);
+}
+
+.gap__label {
+  font-size: var(--size-xs);
+  color: var(--graphite);
+}
+
+.gap__input {
+  min-height: 84px;
+  font-family: var(--font-doc);
+  line-height: var(--leading-doc);
+}
+
+.gap__saved {
+  max-width: var(--measure);
+  color: var(--graphite);
+}
+
+.gaps__rerun {
+  max-width: var(--measure);
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--rule);
+}

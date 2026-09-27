@@ -55,7 +55,12 @@ async def run_match(
         log("requirement cache hit")
     else:
         requirements, title, company = await extract_requirements(llm, posting, output_locale)
-        _cache_put(posting.hash, output_locale, requirements, title, company)
+        # Only a real extraction is worth remembering. Caching the empty one
+        # would pin `no_requirements_found` on this posting for a month, and
+        # the "Run it again" the error tells the user to try would never reach
+        # the model — the retry would be answered by the cached failure.
+        if requirements:
+            _cache_put(posting.hash, output_locale, requirements, title, company)
 
     if not requirements:
         raise EngineError("no_requirements_found")
@@ -75,9 +80,15 @@ async def run_match(
     )
 
     emit_progress("guard", 85)
-    evidence, downgrades = guard_citations(cv, evidence)
-    if downgrades:
-        log(f"guard corrected {downgrades} evidence entries with unknown line ids")
+    evidence, guard = guard_citations(cv, requirements, evidence)
+    if guard.total:
+        # Counts only, never content. A prompt regression that starts inventing
+        # ids, or a model that starts matching on resemblance, shows up here as
+        # a number in the eval run rather than as a quiet wrong verdict.
+        log(
+            f"guard: {guard.invented} invented citation(s), "
+            f"{guard.repaired} repaired, {guard.unproven} cut back to partial"
+        )
 
     if len(evidence) != len(requirements):
         raise EngineError("model_output_invalid", "evidence count does not match requirements")

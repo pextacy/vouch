@@ -161,7 +161,7 @@ class LlmClient:
         response_format: dict[str, Any],
         timeout: float,
     ) -> str:
-        estimated = _estimate(messages, system_prompt) + max_tokens
+        estimated = _estimate(messages, system_prompt, response_format) + max_tokens
         attempt = 0
         while True:
             self.budget.reserve(estimated)
@@ -276,13 +276,40 @@ def _outermost_object(text: str) -> str | None:
     return None
 
 
-def _estimate(messages: list[dict[str, Any]], system_prompt: str) -> int:
-    chars = len(system_prompt)
+#: Characters per token, by how well a tokenizer tends to cover them. English
+#: prose runs about 3.6; a Turkish CV does not, because the suffixes that carry
+#: its grammar are rarely whole tokens and every ğ/ş/ı splits the word around
+#: it. Guessing high costs headroom the budget has; guessing low means the
+#: *host* rejects the third call with -32007, halfway through a run the user
+#: has already waited a minute for.
+_ASCII_CHARS_PER_TOKEN: Final[float] = 3.6
+_OTHER_CHARS_PER_TOKEN: Final[float] = 1.6
+
+
+def _tokens_of(text: str) -> int:
+    ascii_chars = sum(1 for char in text if char.isascii())
+    return int(
+        ascii_chars / _ASCII_CHARS_PER_TOKEN
+        + (len(text) - ascii_chars) / _OTHER_CHARS_PER_TOKEN
+    )
+
+
+def _estimate(
+    messages: list[dict[str, Any]],
+    system_prompt: str,
+    response_format: dict[str, Any] | None = None,
+) -> int:
+    total = _tokens_of(system_prompt)
     for message in messages:
         content = message.get("content")
         if isinstance(content, dict):
-            chars += len(str(content.get("text") or ""))
-    return int(chars / 3.6) + 1
+            total += _tokens_of(str(content.get("text") or ""))
+    if response_format is not None:
+        # The JSON Schema travels as input and is charged like it. Leaving it
+        # out understated every call by the size of the schema — which for the
+        # match model is not a rounding error.
+        total += _tokens_of(json.dumps(response_format, ensure_ascii=False))
+    return total + 1
 
 
 def _is_transient(exc: SamplingError) -> bool:

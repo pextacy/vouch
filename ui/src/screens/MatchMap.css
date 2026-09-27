@@ -16,6 +16,7 @@
 
 .map__group {
   font-size: var(--size-s);
+  --track: 0;
   font-weight: 500;
   color: var(--graphite);
 }
@@ -42,17 +43,24 @@
   border-top: 1px solid var(--rule);
 }
 
+/* The two things that take something out of the app, kept apart from the five
+   ways deeper into it rather than queued behind them — as a pair, because
+   moving one of them alone pushed the other onto a line of its own. Only
+   where there is room; on a phone the bar wraps and they simply follow. */
+.map__takeaways {
+  gap: var(--space-2);
+}
+
+@media (min-width: 900px) {
+  .map__takeaways {
+    margin-inline-start: auto;
+  }
+}
+
 .map__tabs {
   display: flex;
   gap: var(--space-1);
   border-bottom: 1px solid var(--rule);
-}
-
-.map__tabs .tab {
-  border: 0;
-  background: none;
-  font: inherit;
-  cursor: pointer;
 }
 
 /* Phone: one pane at a time, chosen by the tabs. */
@@ -82,7 +90,13 @@
     position: sticky;
     top: var(--space-4);
     max-height: calc(100vh - 16rem);
+    /* A column, so the picker sits above the sheet it points at rather than
+       beside it — a row put them side by side and left the CV a sliver, on
+       the one screen where the CV is the thing being read. The sheet still
+       takes the remaining height through `flex: 1` below. */
     display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
   }
 
   .map__cv > .sheet {
@@ -91,3 +105,36 @@
   }
 }
 
+
+/* Only on a second run of the same posting: a line of text in the head rather
+   than a callout box, because it is an offer, not a warning. */
+.map__again {
+  max-width: var(--measure);
+  color: var(--graphite);
+}
+
+.map__again .map__againLink {
+  padding-inline: 0;
+  min-height: 0;
+}
+
+/* The picker, above the sheet it picks from. */
+.map__picker {
+  padding: var(--space-4);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-input);
+  background: var(--paper);
+  /* Not `--measure`: this sits inside the CV column, which on a two-column
+     desktop is narrower than a reading measure, and a wider box there wins
+     the grid and squeezes the sheet it exists to point at. */
+  max-width: 100%;
+}
+
+.map__pickerAsk {
+  font-weight: 500;
+  max-width: var(--measure);
+}
+
+.map__asserted {
+  max-width: var(--measure);
+}

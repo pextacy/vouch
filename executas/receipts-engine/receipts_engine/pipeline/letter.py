@@ -101,14 +101,70 @@ async def write_letter(
             "no paragraph survived verification with evidence attached",
         )
 
+    # The stored text keeps its placeholders, and that is deliberate: what the
+    # verifier approved is what gets saved, byte for byte. The app knows the
+    # employer and the role from the posting, but writing them in here would
+    # mean the paragraph a reader sees is no longer the paragraph that passed —
+    # and `scripts/eval_match.py` re-checks these paragraphs against the CV
+    # with no idea what else the app knows, which is exactly the kind of
+    # auditor worth keeping uninformed. `resolve_placeholders` fills them in at
+    # the point of use instead.
     return LetterResult(
         match_id=match.id,
         tone=_as_tone(tone),
         paragraphs=kept,
-        placeholders=sorted(
-            {hit.group(0) for para in kept for hit in _PLACEHOLDER_RE.finditer(para.text)}
-        ),
+        # Only the ones the user has to replace by hand. `[Company]` and
+        # `[Role]` are resolved at render time when the posting gave them, so
+        # listing them would send the user looking for something already dealt
+        # with.
+        placeholders=placeholders_left(kept, match, company=company, role=role),
     )
+
+
+def placeholders_left(
+    paragraphs: list[LetterParagraph],
+    match: MatchResult,
+    *,
+    company: str | None = None,
+    role: str | None = None,
+) -> list[str]:
+    """The placeholders a reader still has to fill in by hand.
+
+    `[Company]` and `[Role]` are resolved at render time when the posting gave
+    them, so listing those would send the user looking for something already
+    dealt with. Shared with `followup.py`, which makes the same promise about
+    the same tokens.
+    """
+    return sorted(
+        {
+            hit.group(0)
+            for para in paragraphs
+            for hit in _PLACEHOLDER_RE.finditer(para.text)
+            if hit.group(0) not in _resolvable(company, role, match)
+        }
+    )
+
+
+def _resolvable(company: str | None, role: str | None, match: MatchResult) -> set[str]:
+    """Placeholders the app can fill from the posting, so the user need not."""
+    known: set[str] = set()
+    if company or match.posting.company:
+        known.add("[Company]")
+    if role or match.posting.title:
+        known.add("[Role]")
+    return known
+
+
+def resolve_placeholders(text: str, *, company: str | None, role: str | None) -> str:
+    """Put the known names into a verified paragraph, at the point of use.
+
+    Called when the letter is rendered — the DOCX, and the UI — never before
+    the verifier has seen the text.
+    """
+    for token, value in (("[Company]", company), ("[Role]", role)):
+        if value:
+            text = text.replace(token, value)
+    return text
 
 
 async def _generate(
@@ -125,7 +181,7 @@ async def _generate(
     extra_instruction: str = "",
 ) -> LetterOutput:
     system = render(
-        "letter.v1.md",
+        "letter.v2.md",
         tone=tone,
         length_words=str(LENGTH_WORDS.get(length, 250)),
         output_language=language_name(locale),
@@ -139,10 +195,12 @@ async def _generate(
             for e in match.evidence
         )
     )
-    header = (
-        f"ROLE: {role or match.posting.title or '[Role]'}\n"
-        f"COMPANY: {company or match.posting.company or '[Company]'}\n"
-    )
+    # The model is never told the real role or employer. It cannot leak a name
+    # it does not have, and the verifier is never asked to ground one: neither
+    # appears in the CV, so a letter that named them lost its whole opening
+    # paragraph to the repair pass. `_fill_placeholders` puts them back after
+    # the text has been checked.
+    header = "ROLE: [Role]\nCOMPANY: [Company]\n"
     user = (
         f"{header}\n"
         "MUST-HAVE REQUIREMENTS WITH EVIDENCE\n"

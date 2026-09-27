@@ -21,6 +21,7 @@
 
 .req__quote {
   font-family: var(--font-doc);
+  line-height: var(--leading-doc);
   color: var(--graphite);
   font-size: var(--size-xs);
   max-width: var(--measure);
@@ -35,5 +36,31 @@
 }
 
 .req__note {
+  max-width: var(--measure);
+}
+
+/* The user's own correction, under the app's verdict.
+ *
+ * Indented behind a rule rather than badged: it is a second voice on the same
+ * requirement, and a badge would read as the app having changed its mind. */
+.req__asserted {
+  padding-inline-start: var(--space-3);
+  border-inline-start: 2px solid var(--rule);
+}
+
+.req__assertedNote {
+  color: var(--graphite);
+  font-size: var(--size-xs);
+}
+
+.req__dispute {
+  padding-inline: 0;
+  min-height: 0;
+}
+
+/* The guard's reason. Graphite, no icon, no colour: a verdict that got
+   smaller is information, not an alarm. */
+.req__guard {
+  color: var(--graphite);
   max-width: var(--measure);
 }

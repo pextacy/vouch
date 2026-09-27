@@ -12,16 +12,33 @@ import { DropZone } from "../components/DropZone";
 import { ErrorNotice } from "../components/ErrorNotice";
 import { Screen } from "../components/Screen";
 import { t } from "../i18n";
-import { addCvFromFile, addCvFromText, cvPhase, cvUpload, dismissError, error } from "../state";
+import { navigate } from "../router";
+import {
+  addCvFromFile,
+  addCvFromText,
+  addingCv,
+  cvPhase,
+  cvUpload,
+  dismissError,
+  error,
+  hasCv,
+} from "../state";
 import "./AddCv.css";
 
 export function AddCv() {
   const [text, setText] = useState("");
   const busy = cvPhase.value === "running";
   const upload = cvUpload.value;
+  // Adding a second CV and replacing the only one are the same parse and very
+  // different acts — one starts an empty workspace, the other keeps the
+  // applications already made. The screen says which one it is doing.
+  const adding = addingCv.value && hasCv.value;
 
   return (
-    <Screen heading={t("cv.add.heading")} lede={t("cv.add.body")}>
+    <Screen
+      heading={adding ? t("cv.profiles.addHeading") : t("cv.add.heading")}
+      lede={adding ? t("cv.profiles.addBody") : t("cv.add.body")}
+    >
       {error.value && <ErrorNotice error={error.value} onDismiss={dismissError} />}
 
       <DropZone
@@ -67,6 +84,21 @@ export function AddCv() {
           </button>
         </div>
       </div>
+
+      {adding && (
+        <div class="row">
+          <button
+            type="button"
+            class="button button--quiet"
+            onClick={() => {
+              addingCv.value = false;
+              navigate("/cv/preview");
+            }}
+          >
+            {t("cv.profiles.addCancel")}
+          </button>
+        </div>
+      )}
     </Screen>
   );
 }

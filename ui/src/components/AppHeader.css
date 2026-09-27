@@ -60,6 +60,24 @@
   white-space: nowrap;
 }
 
+/* The same tab on a <button>: a switch rather than a link. Without the reset
+   it keeps the browser's own font and colour, which the dark theme reads at
+   2.3:1 — the one contrast failure a class this widely used can hide. */
+button.tab {
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* …but the element selector above outranks `.tab--current`, so the chip that
+   marks the open tab has to be restated for buttons. Without this the current
+   tab is told apart by weight alone, which is one signal where the design
+   system asks for two. */
+button.tab--current {
+  background: var(--tab);
+}
+
 .tab:hover {
   color: var(--ink);
 }

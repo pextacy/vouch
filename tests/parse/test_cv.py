@@ -2,10 +2,20 @@
 
 from __future__ import annotations
 
+import io
+import zipfile
+
 import pytest
 
 from receipts_engine.errors import EngineError
-from receipts_engine.parse.cv import MAX_CV_CHARS, MAX_FILE_BYTES, parse_cv
+from receipts_engine.parse.cv import (
+    MAX_CV_CHARS,
+    MAX_DOCX_MEMBERS,
+    MAX_DOCX_UNPACKED_BYTES,
+    MAX_FILE_BYTES,
+    MAX_PDF_PAGES,
+    parse_cv,
+)
 
 from ..conftest import SAMPLE_CV_LINES, build_docx, build_pdf
 
@@ -167,3 +177,57 @@ def test_corrupt_docx_is_unreadable() -> None:
     with pytest.raises(EngineError) as excinfo:
         parse_cv(source="docx", data=b"PK\x03\x04 but not really a docx" * 20)
     assert excinfo.value.code == "unreadable_file"
+
+
+# ─── Bombs and blow-ups ───────────────────────────────────────────────
+
+
+def test_a_pdf_with_absurdly_many_pages_is_truncated_not_read_whole() -> None:
+    """`parse_cv` runs on the synchronous channel, so the page count is a budget.
+
+    A real CV's content sits in its first pages, so the honest answer is to
+    read those and say the document was truncated — not to refuse a file whose
+    exporter appended a hundred blank pages.
+    """
+    data = build_pdf(SAMPLE_CV_LINES * 40, pages=MAX_PDF_PAGES + 20)
+    doc = parse_cv(source="pdf", data=data)
+    assert "truncated" in doc.warnings
+    assert doc.lines
+
+
+def test_a_pdf_within_the_page_budget_is_not_flagged() -> None:
+    doc = parse_cv(source="pdf", data=build_pdf(SAMPLE_CV_LINES * 4, pages=4))
+    assert "truncated" not in doc.warnings
+
+
+def test_a_docx_that_unpacks_to_gigabytes_is_refused() -> None:
+    """The 2 MB upload cap says nothing about what parsing it costs.
+
+    python-docx parses the expansion, and a zip of repeated bytes expands by
+    three orders of magnitude. This is the one shape of file that is small on
+    the wire and ruinous in memory.
+    """
+    bomb = io.BytesIO()
+    with zipfile.ZipFile(bomb, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("[Content_Types].xml", "<Types/>")
+        archive.writestr("word/document.xml", b"A" * (MAX_DOCX_UNPACKED_BYTES + 1))
+
+    with pytest.raises(EngineError) as excinfo:
+        parse_cv(source="docx", data=bomb.getvalue())
+    assert excinfo.value.code == "file_too_large"
+
+
+def test_a_docx_with_thousands_of_members_is_refused() -> None:
+    crowded = io.BytesIO()
+    with zipfile.ZipFile(crowded, "w", zipfile.ZIP_DEFLATED) as archive:
+        for index in range(MAX_DOCX_MEMBERS + 1):
+            archive.writestr(f"word/media/{index}.bin", b"x")
+
+    with pytest.raises(EngineError) as excinfo:
+        parse_cv(source="docx", data=crowded.getvalue())
+    assert excinfo.value.code == "file_too_large"
+
+
+def test_an_ordinary_docx_still_passes_the_guard() -> None:
+    doc = parse_cv(source="docx", data=build_docx(SAMPLE_CV_LINES))
+    assert doc.lines

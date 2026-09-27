@@ -1,0 +1,95 @@
+/* One application, read twice: what it could not show, and what has arrived
+   since. No marker anywhere on this screen — the highlighter means a verified
+   receipt in this app, and nothing here has been verified yet. That is the
+   whole point of the screen, so it would be the wrong ink. */
+
+.since__age {
+  max-width: var(--measure);
+}
+
+/* Peers are separated by space, the way the interview brief separates its
+   two halves; the rule is saved for a section that changes register (below).
+   A divider above every heading reads as a table of contents, not a page. */
+.since__section {
+  max-width: var(--measure);
+  padding-top: var(--space-6);
+}
+
+.since__section h2 {
+  font-size: var(--size-m);
+  --track: 0;
+  font-weight: 500;
+  margin: 0;
+}
+
+.since__lede,
+.since__note {
+  max-width: var(--measure);
+}
+
+.since {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-6) 0;
+  max-width: var(--measure);
+}
+
+.since__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.since__requirement {
+  font-size: var(--size-s);
+  font-weight: 500;
+  margin: 0;
+}
+
+.since__must {
+  color: var(--graphite);
+}
+
+.since__verdict {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin: 0;
+}
+
+.since__lines {
+  margin: 0;
+  padding-inline-start: var(--space-3);
+  border-inline-start: 2px solid var(--rule);
+  list-style: none;
+  width: 100%;
+}
+
+/* The user's own new sentence, set in the document face like every other
+   quotation of the CV in this app. */
+.since__quote {
+  font-family: var(--font-doc);
+  font-size: var(--size-s);
+  line-height: var(--leading-doc);
+  margin: 0;
+}
+
+.since__chips {
+  gap: var(--space-2);
+  align-items: center;
+  margin-top: var(--space-1);
+}
+
+.since__terms {
+  margin: 0;
+  font-size: var(--size-xs);
+  color: var(--graphite);
+}
+
+.since__actions {
+  margin-top: var(--space-4);
+}

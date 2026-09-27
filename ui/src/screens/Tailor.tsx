@@ -17,6 +17,7 @@ import { navigate } from "../router";
 import {
   acceptBullet,
   acceptedBullets,
+  bulletKey,
   currentMatch,
   dismissError,
   error,
@@ -57,7 +58,7 @@ export function Tailor() {
       {result && result.bullets.length > 0 && (
         <ul class="list">
           {result.bullets.map((bullet) => {
-            const key = bullet.source_line_ids[0] ?? bullet.original.slice(0, 24);
+            const key = bulletKey(bullet);
             return (
               <BulletDiff
                 key={key}

@@ -19,7 +19,10 @@ date             the year or month name appears in the source
 duration         the same number + unit, **or** derivable from source dates
 tech             the canonical term appears in the source
 proper_noun      appears in the source as a whole word — or, if it is not a
-                 tech term, in the posting's own requirement vocabulary
+                 tech term, in the posting's own requirement vocabulary: as a
+                 multi-word phrase freely, as a single word only when
+                 ``concepts.CONCEPT_WORDS`` lists it, because a lone word is
+                 the shape a product or employer name takes
 title            appears in the source as a whole word
 ===============  ===========================================================
 
@@ -41,6 +44,7 @@ from datetime import date
 from typing import Final, Literal
 
 from ..text import normalize, normalize_token
+from .concepts import is_concept
 from .lexicon import DEFAULT_LEXICON, TechLexicon
 
 ClaimKind = Literal["number", "date", "duration", "tech", "proper_noun", "title"]
@@ -133,6 +137,17 @@ _COMMON_CAPITALISED: Final[frozenset[str]] = frozenset(
         "education", "skills", "certifications", "languages", "interests",
         "monday", "tuesday", "wednesday", "thursday", "friday", "saturday",
         "sunday", "today", "present", "current",
+        # Words that open a sentence and carry no fact. The sentence-initial
+        # rule above only forgives a *single* capitalised word, so "Since I
+        # applied…" — the natural first line of a follow-up — was read as a
+        # two-word proper noun and dropped a grounded paragraph. A phrase is
+        # only discarded when **every** word is one of these, so "Since
+        # Globex" is still the invented employer it looks like.
+        "since", "after", "before", "during", "while", "when", "whenever",
+        "because", "although", "though", "unless", "until", "once", "if",
+        "then", "also", "however", "meanwhile", "recently", "previously",
+        "now", "next", "finally", "still", "yet",
+        "sonra", "önce", "çünkü", "ancak", "ayrıca", "şimdi", "artık",
         "ve", "ile", "için", "olarak", "ekip", "proje", "ürün", "şirket",
         "müşteri", "deneyim", "eğitim", "beceriler", "yetenekler", "özet",
         "geliştirdim", "yönettim", "kurdum", "tasarladım", "çalıştım",
@@ -491,7 +506,10 @@ def supported(claim: Claim, index: SupportIndex, allowed_vocab: frozenset[str]) 
         return True
     if claim.kind in _NEVER_FROM_POSTING:
         return False
-    return bool(_soft_forms(claim.key) & allowed_vocab)
+    # Strip sentence punctuation the key carried in: "stakeholders." and
+    # "stakeholders" are the same borrowing, and the full stop deciding it was
+    # an accident of where the word fell in the sentence.
+    return bool(_soft_forms(claim.key.strip(".")) & allowed_vocab)
 
 
 #: Suffixes stripped when matching a *concept* against the posting's wording.
@@ -535,31 +553,109 @@ def verify(
 
     ``posting_vocab`` is the list of requirement texts. A capitalised concept
     the posting itself uses ("Customer Success") is allowed even when the CV
-    words it differently — but only when it is not a technology and not a
-    number, date, duration or title.
+    words it differently — but only when it runs to more than one word, is not
+    a technology, and is not a number, date, duration or title.
     """
-    lex = lexicon or DEFAULT_LEXICON
     if not generated.strip():
         return Verdict(ok=True)
-    index = SupportIndex(sources, lex)
-    allowed = _vocab_index(posting_vocab or [], lex)
-    unsupported = [
-        claim for claim in extract_claims(generated, lex) if not supported(claim, index, allowed)
-    ]
-    return Verdict(ok=not unsupported, unsupported=unsupported)
+    return Verifier(sources, lexicon=lexicon, posting_vocab=posting_vocab).check(generated)
+
+
+class Verifier:
+    """One CV's support index and one posting's vocabulary, held for reuse.
+
+    :func:`verify` builds both every time it is called, which is the right
+    trade when the caller has a handful of generated bullets to check. The
+    document check reads a whole pasted CV or letter — hundreds of sentences
+    against one unchanging CV — and rebuilding the index per sentence would be
+    the same work done hundreds of times. The rule applied is identical; only
+    the setup is shared.
+    """
+
+    def __init__(
+        self,
+        sources: list[str],
+        *,
+        lexicon: TechLexicon | None = None,
+        posting_vocab: list[str] | None = None,
+    ) -> None:
+        self.lexicon = lexicon or DEFAULT_LEXICON
+        self.index = SupportIndex(sources, self.lexicon)
+        self.allowed = _vocab_index(posting_vocab or [], self.lexicon)
+
+    def check(self, generated: str) -> Verdict:
+        """The same verdict :func:`verify` would return for this sentence."""
+        if not generated.strip():
+            return Verdict(ok=True)
+        unsupported = [
+            claim
+            for claim in extract_claims(generated, self.lexicon)
+            if not supported(claim, self.index, self.allowed)
+        ]
+        return Verdict(ok=not unsupported, unsupported=unsupported)
+
+
+def titles_in(text: str) -> set[str]:
+    """Seniority and role words the text claims, normalised.
+
+    Public because the CV audit asks the same question the verifier does — is
+    this title carried by a line that can back it — just about the user's own
+    document instead of about generated text.
+    """
+    return {normalize(match.group(0)) for match in _TITLE_RE.finditer(text)}
+
+
+def title_surfaces(text: str) -> dict[str, str]:
+    """Normalised title → the way ``text`` writes it, for showing it back."""
+    found: dict[str, str] = {}
+    for match in _TITLE_RE.finditer(text):
+        found.setdefault(normalize(match.group(0)), match.group(0))
+    return found
+
+
+def year_ranges_in(text: str) -> list[tuple[int, int | None]]:
+    """``(start, end)`` year pairs. ``end`` is ``None`` for an open range.
+
+    "2019 – present" is open, and an open range is not a defect: it is the
+    current job. The caller decides what today means.
+    """
+    ranges: list[tuple[int, int | None]] = []
+    for match in _RANGE_RE.finditer(text):
+        start = int(match.group(1))
+        tail = match.group(2)
+        ranges.append((start, int(tail) if tail.isdigit() else None))
+    return ranges
 
 
 def _vocab_index(posting_vocab: list[str], lexicon: TechLexicon) -> frozenset[str]:
-    """Normalised capitalised phrases the posting uses, minus tech terms."""
+    """Normalised wording the posting may lend to a rewrite.
+
+    Two rules, and the second one is the fix for a leak the first never had:
+
+    * a **multi-word** capitalised phrase is a concept by construction, so it
+      is allowed unless the lexicon says it is a tool;
+    * a **single word** is allowed only when :data:`CONCEPT_WORDS` lists it.
+
+    That second rule used to read "allowed unless the lexicon knows it", which
+    made an *unknown* word an allowed word — and every product, vendor and
+    employer the lexicon had never heard of is an unknown word. A posting
+    saying "Salesforce administration" licensed "Salesforce" in a tailored
+    bullet whose CV lines never mentioned it. Now the burden runs the other
+    way: a lone word has to be a listed concept or come from the CV.
+    """
     allowed: set[str] = set()
     for entry in posting_vocab:
         for match in _PROPER_RE.finditer(entry):
             phrase = match.group(1).strip()
+            if len(phrase.split()) < 2:
+                continue  # a lone name is a fact; the word rule below judges it
             if lexicon.matches(normalize(phrase)):
                 continue  # a tool named in the posting is still not yours
             allowed.add(normalize(phrase))
         for word in normalize(entry).split():
-            if not lexicon.knows(word):
+            if lexicon.knows(word):
+                continue  # ditto, for a tool written in lowercase
+            if is_concept(word):
                 allowed.add(word)
     return frozenset(allowed)
 

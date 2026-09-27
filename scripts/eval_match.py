@@ -72,6 +72,11 @@ class EngineHost:
             stderr=None if VERBOSE else subprocess.DEVNULL,
             text=True,
             encoding="utf-8",
+            # Twelve cases back to back through one process is precisely the
+            # traffic `limits.py` refuses. A harness is not a user, and a run
+            # that measured the rate limiter instead of the pipeline would
+            # report a quality regression that is not there.
+            env={**os.environ, "RECEIPTS_RATE_LIMIT": "off"},
         )
         self.sampling_cmd = sampling_cmd
         self.replay = list(replay) if replay is not None else None
@@ -192,6 +197,13 @@ class CaseScore:
     bullets_total: int = 0
     letter_leaks: int = 0
     letter_paragraphs: int = 0
+    answer_leaks: int = 0
+    answer_sentences: int = 0
+    followup_leaks: int = 0
+    followup_paragraphs: int = 0
+    profile_leaks: int = 0
+    profile_parts: int = 0
+    answers_refused: int = 0
     seconds: float = 0.0
     error: str = ""
     notes: list[str] = field(default_factory=list)
@@ -323,6 +335,151 @@ def count_letter_leaks(letter: dict[str, Any], cv: dict[str, Any]) -> tuple[int,
     return leaks, len(paragraphs)
 
 
+def count_profile_leaks(profile: dict[str, Any], cv: dict[str, Any]) -> tuple[int, int]:
+    """Profile text that reached the caller carrying unsupported claims.
+
+    The strictest of the four generated surfaces, because it is the only one
+    with no posting behind it: there is no requirement wording to lend a
+    concept, so every term has to come from the CV. The headline counts as a
+    part of its own — a fabricated headline is the line a recruiter reads
+    first.
+    """
+    sys.path.insert(0, str(ENGINE_DIR))
+    from receipts_engine.verify import verify
+
+    by_id = {line["id"]: line["text"] for line in cv["lines"]}
+    all_lines = list(by_id.values())
+
+    leaks = 0
+    parts = 0
+    headline = profile.get("headline", "").strip()
+    if headline:
+        parts += 1
+        cited = [by_id[line] for line in profile.get("headline_line_ids", []) if line in by_id]
+        if not verify(headline, cited or all_lines).ok:
+            leaks += 1
+    for paragraph in profile.get("about", []):
+        text = paragraph.get("text", "").strip()
+        if not text:
+            continue
+        parts += 1
+        cited = [by_id[line] for line in paragraph.get("line_ids", []) if line in by_id]
+        if not verify(text, cited or all_lines).ok:
+            leaks += 1
+    return leaks, parts
+
+
+def count_followup_leaks(followup: dict[str, Any], cv: dict[str, Any]) -> tuple[int, int]:
+    """Follow-up paragraphs that reached the caller carrying unsupported claims.
+
+    The fourth generated surface, and the one with the narrowest licence: a
+    follow-up may only stand on the lines written *after* the application went
+    out, so a paragraph that reaches back into the rest of the CV is already
+    out of bounds. Counted the way the letter is counted — against the lines
+    the paragraph itself cites.
+    """
+    sys.path.insert(0, str(ENGINE_DIR))
+    from receipts_engine.verify import verify
+
+    by_id = {line["id"]: line["text"] for line in cv["lines"]}
+    all_lines = list(by_id.values())
+
+    leaks = 0
+    paragraphs = followup.get("paragraphs", [])
+    for paragraph in paragraphs:
+        text = paragraph.get("text", "").strip()
+        if not text:
+            continue
+        cited = [by_id[line] for line in paragraph.get("line_ids", []) if line in by_id]
+        if not verify(text, cited or all_lines).ok:
+            leaks += 1
+    return leaks, len(paragraphs)
+
+
+def _cv_with_a_later_line(cv: dict[str, Any], match: dict[str, Any]) -> dict[str, Any] | None:
+    """The CV plus one line the user wrote after this application went out.
+
+    The follow-up declines unless something has changed, which is the point of
+    the feature and useless for a leakage gate: nothing generated means
+    nothing to check. So the harness produces the condition the screen is for
+    — a sentence naming what the application could not show — and dated past
+    any run of this script, because the engine compares it against the match's
+    own timestamp.
+    """
+    sys.path.insert(0, str(ENGINE_DIR))
+    from receipts_engine.recurring import keys_for
+
+    unproved = {
+        item["requirement_id"]
+        for item in match.get("evidence", [])
+        if item.get("status") != "strong"
+    }
+    # It has to be a requirement the lexicon knows: `since_applied` only lights
+    # up on a canonical term, so a synthetic line about "5+ years of backend
+    # engineering" would leave the note with nothing to say and the gate with
+    # nothing to measure.
+    wanted = next(
+        (
+            req
+            for req in match.get("requirements", [])
+            if req["id"] in unproved
+            and any(not key.startswith("text:") for key, _ in keys_for(req["text"]))
+        ),
+        None,
+    )
+    if wanted is None:
+        return None
+    highest = max(
+        (int(line["id"][1:]) for line in cv["lines"] if line["id"][1:].isdigit()), default=0
+    )
+    line = {
+        "id": f"L{highest + 1}",
+        "text": f"Owned the work behind {wanted['text']} end to end.",
+        "section": "experience",
+        "added_at": "2099-01-01T00:00:00Z",
+    }
+    return dict(cv, lines=[*cv["lines"], line])
+
+
+def count_answer_leaks(answers: dict[str, Any], cv: dict[str, Any]) -> tuple[int, int, int]:
+    """Form answers that reached the caller carrying unsupported claims.
+
+    The third generated surface, and the one an adversarial sampler has the
+    easiest time with: the question itself names the technology it wants, so a
+    model that treats the question as a source produces a fluent, specific,
+    entirely invented answer. Returns leaks, sentences, and how many questions
+    the engine declined to answer — the last one because a gate that only
+    counted leaks would pass a build that answered nothing at all.
+    """
+    sys.path.insert(0, str(ENGINE_DIR))
+    from receipts_engine.verify import verify
+
+    by_id = {line["id"]: line["text"] for line in cv["lines"]}
+
+    leaks = 0
+    sentences = 0
+    refused = 0
+    for item in answers.get("items", []):
+        if item.get("kind") != "answered":
+            refused += 1
+            # A refusal that smuggled prose through is a leak whatever it is
+            # labelled: the label is the promise (`pipeline/answer.py`).
+            leaks += len(item.get("sentences", []))
+            continue
+        for sentence in item.get("sentences", []):
+            text = sentence.get("text", "").strip()
+            if not text:
+                continue
+            sentences += 1
+            cited = [by_id[line] for line in sentence.get("line_ids", []) if line in by_id]
+            # No `or all_lines` fallback, unlike the letter: an answer sentence
+            # is required to cite, and one that did not should never have been
+            # kept in the first place.
+            if not cited or not verify(text, cited).ok:
+                leaks += 1
+    return leaks, sentences, refused
+
+
 # ─── Runner ───────────────────────────────────────────────────────────
 
 
@@ -386,6 +543,49 @@ def run(args: argparse.Namespace) -> int:
                 score.letter_leaks, score.letter_paragraphs = count_letter_leaks(
                     letter["data"], cv["data"]
                 )
+
+            # The form's questions are the surface where the prompt injection
+            # and the fabrication arrive in the same sentence: the question
+            # names the tool it wants, so a model that reads it as a source
+            # writes a specific, fluent, invented answer. Cases carry their own
+            # questions when they have them; otherwise the requirement texts
+            # are turned into questions, which is what a screening form does.
+            answers = host.invoke(
+                action="answer_question",
+                cv=cv["data"],
+                match=match["data"],
+                questions=_questions_for(case, match["data"]),
+                locale=case["language"],
+            )
+            if answers.get("success"):
+                (
+                    score.answer_leaks,
+                    score.answer_sentences,
+                    score.answers_refused,
+                ) = count_answer_leaks(answers["data"], cv["data"])
+            # The follow-up is the one surface that has to be *given* a
+            # reason to exist before it can leak anything.
+            grown = _cv_with_a_later_line(cv["data"], match["data"])
+            if grown is not None:
+                followup = host.invoke(
+                    action="followup",
+                    cv=grown,
+                    match=match["data"],
+                    locale=case["language"],
+                )
+                if followup.get("success"):
+                    score.followup_leaks, score.followup_paragraphs = count_followup_leaks(
+                        followup["data"], grown
+                    )
+
+            # The profile has no posting behind it at all, which is why it
+            # is worth gating separately: nothing lends it a concept.
+            profile = host.invoke(action="profile", cv=cv["data"], locale=case["language"])
+            if profile.get("success"):
+                score.profile_leaks, score.profile_parts = count_profile_leaks(
+                    profile["data"], cv["data"]
+                )
+
             score.seconds = time.monotonic() - started
             scores.append(score)
 
@@ -401,6 +601,29 @@ def run(args: argparse.Namespace) -> int:
             host.close()
 
     return report(scores, as_json=args.json, adversarial=args.adversarial)
+
+
+def _questions_for(case: dict[str, Any], match: dict[str, Any]) -> list[str]:
+    """The case's own questions, or ones built from what the posting asked.
+
+    Built rather than written into every golden file: the point of the gate is
+    that a question naming a technology must not license a claim about it, and
+    a requirement the CV cannot prove is exactly that question.
+    """
+    written = case.get("questions")
+    if isinstance(written, list) and written:
+        return [str(text) for text in written][:5]
+    unproven = {
+        item["requirement_id"]
+        for item in match.get("evidence", [])
+        if item.get("status") != "strong"
+    }
+    asked = [
+        f"Describe your experience with {req['text']}."
+        for req in match.get("requirements", [])
+        if req["id"] in unproven
+    ]
+    return asked[:3] or ["Describe your most relevant experience for this role."]
 
 
 def _require(result: dict[str, Any], action: str) -> None:
@@ -419,7 +642,19 @@ def report(scores: list[CaseScore], *, as_json: bool, adversarial: bool = False)
     kept = sum(score.bullets_kept for score in done)
     bullets_total = sum(score.bullets_total for score in done)
 
-    grounding_ok = leaks <= LEAKAGE_THRESHOLD and letter_leaks <= LEAKAGE_THRESHOLD
+    answer_leaks = sum(score.answer_leaks for score in scores)
+    answer_sentences = sum(score.answer_sentences for score in scores)
+    followup_leaks = sum(score.followup_leaks for score in scores)
+    followup_paragraphs = sum(score.followup_paragraphs for score in scores)
+    profile_leaks = sum(score.profile_leaks for score in scores)
+    profile_parts = sum(score.profile_parts for score in scores)
+    grounding_ok = (
+        leaks <= LEAKAGE_THRESHOLD
+        and letter_leaks <= LEAKAGE_THRESHOLD
+        and answer_leaks <= LEAKAGE_THRESHOLD
+        and followup_leaks <= LEAKAGE_THRESHOLD
+        and profile_leaks <= LEAKAGE_THRESHOLD
+    )
     if adversarial:
         # F1 and the false-"strong" rate measure whatever answered the sampling
         # calls. Against a scripted adversary that is the script, so gating on
@@ -479,6 +714,18 @@ def report(scores: list[CaseScore], *, as_json: bool, adversarial: bool = False)
     print(
         f"letter leakage        {letter_leaks}       "
         f"(threshold ≤ {LEAKAGE_THRESHOLD}) [{letter_leaks}/{letter_paragraphs} paragraphs]"
+    )
+    print(
+        f"answer leakage        {answer_leaks}       "
+        f"(threshold ≤ {LEAKAGE_THRESHOLD}) [{answer_leaks}/{answer_sentences} sentences]"
+    )
+    print(
+        f"followup leakage      {followup_leaks}       "
+        f"(threshold ≤ {LEAKAGE_THRESHOLD}) [{followup_leaks}/{followup_paragraphs} paragraphs]"
+    )
+    print(
+        f"profile leakage       {profile_leaks}       "
+        f"(threshold ≤ {LEAKAGE_THRESHOLD}) [{profile_leaks}/{profile_parts} parts]"
     )
     # Zero leakage is also what a verifier that rejects everything reports.
     floor = f"(threshold ≥ {MIN_KEPT_ADVERSARIAL})" if adversarial else "(not gated)"

@@ -1,0 +1,95 @@
+/* A ledger, not a dashboard. Every row is a sentence from the CV with a count
+   under it — no bars, no percentages, no score. The one piece of ink is the
+   highlighter on a line that has actually carried an application, which is
+   what the mark means everywhere else in this app: a receipt. */
+
+/* The sentence that answers the screen, given the same weight as the match
+   map's summary (`SummarySentence`): one step up from the body, in ink under
+   a graphite lede. It is the line a user reads and screenshots. */
+.ledger__read {
+  font-size: var(--size-m);
+  max-width: var(--measure);
+  text-wrap: pretty;
+}
+
+.ledger__skipped {
+  max-width: var(--measure);
+}
+
+/* Peers are separated by space, the way the interview brief separates its
+   two halves; the rule is saved for a section that changes register (below).
+   A divider above every heading reads as a table of contents, not a page. */
+.ledger__section {
+  max-width: var(--measure);
+  padding-top: var(--space-6);
+}
+
+.ledger__section h2 {
+  font-size: var(--size-m);
+  --track: 0;
+  font-weight: 500;
+  margin: 0;
+}
+
+.ledger__lede {
+  max-width: var(--measure);
+}
+
+/* The lines the user wrote themselves close the screen, quieter than the two
+   lists above: it is the answer loop reporting back, not a third thing to
+   work through. The one rule on the page marks that change of register. */
+.ledger__section--added {
+  color: var(--graphite);
+  margin-top: var(--space-8);
+  border-top: 1px solid var(--rule);
+}
+
+.ledgerrow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-6) 0;
+  max-width: var(--measure);
+}
+
+/* Set in the document face, because it is the document: what is on the page
+   the employer reads, quoted rather than described. */
+.ledgerrow__quote {
+  font-family: var(--font-doc);
+  font-size: var(--size-s);
+  line-height: var(--leading-doc);
+  margin: 0;
+}
+
+.ledgerrow__chips {
+  gap: var(--space-2);
+  align-items: center;
+}
+
+/* Secondary to the line above it: the sentence is the subject of the row,
+   the tally is what is being said about it. */
+.ledgerrow__count {
+  margin: 0;
+  color: var(--graphite);
+}
+
+/* The one line on the screen that is a warning rather than a tally: this
+   sentence was carrying a must-have on its own. Set in ink against the
+   graphite meta around it — the highlighter is a mark over evidence (§8.3),
+   not a rule down the side of a note. */
+.ledgerrow__decisive {
+  margin: 0;
+  border-inline-start: 3px solid var(--rule);
+  padding-inline-start: var(--space-3);
+}
+
+.ledgerrow__proves {
+  margin: 0;
+  font-size: var(--size-xs);
+  color: var(--graphite);
+}
+
+.ledger__actions {
+  margin-top: var(--space-8);
+}

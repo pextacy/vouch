@@ -15,8 +15,12 @@ import { Screen } from "../components/Screen";
 import { ToneSwitch } from "../components/ToneSwitch";
 import { DownloadIcon } from "../components/Icons";
 import { t } from "../i18n";
+import { namesFromMatch, resolvedParagraphs } from "../lib/letter";
 import { navigate } from "../router";
 import {
+  checkAgainst,
+  checkDraft,
+  clearCheck,
   currentMatch,
   dismissError,
   error,
@@ -52,10 +56,18 @@ export function Letter() {
     return null;
   }
 
+  // The stored text still says `[Company]`: the engine keeps a paragraph
+  // exactly as it was verified and leaves the names to the point of use.
+  const paragraphs = result && match ? resolvedParagraphs(result, namesFromMatch(match)) : [];
+
+  // The letter as it would actually be sent, names filled in — what the copy
+  // button puts on the clipboard and what the check should read.
+  const plain = paragraphs.map((paragraph) => paragraph.text).join("\n\n");
+
   async function copy(): Promise<void> {
     if (!result) return;
     try {
-      await navigator.clipboard.writeText(result.paragraphs.map((p) => p.text).join("\n\n"));
+      await navigator.clipboard.writeText(plain);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -105,7 +117,7 @@ export function Letter() {
               </button>
             }
           >
-            {result.paragraphs.map((paragraph, index) => (
+            {paragraphs.map((paragraph, index) => (
               <LetterParagraph key={index} paragraph={paragraph} showCitations={showCitations} />
             ))}
           </DocumentSheet>
@@ -132,6 +144,23 @@ export function Letter() {
         >
           <DownloadIcon size={16} />
           {exportPhase.value === "running" ? t("export.preparing") : t("export.download")}
+        </button>
+        {/* The last honest moment before the letter leaves. Everything on
+            this screen passed the verifier; what the user pastes into the
+            portal after editing it has not, and this is where that gap is
+            closest to hand. The letter goes across as the draft so the check
+            opens on the version actually in front of them. */}
+        <button
+          type="button"
+          class="button button--quiet"
+          onClick={() => {
+            clearCheck();
+            checkDraft.value = plain;
+            checkAgainst.value = match.id;
+            navigate("/check");
+          }}
+        >
+          {t("letter.check")}
         </button>
         <button
           type="button"

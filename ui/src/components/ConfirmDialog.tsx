@@ -44,7 +44,12 @@ export function ConfirmDialog({
         <button type="button" class="button button--secondary" onClick={onCancel}>
           {t("common.cancel")}
         </button>
-        <button type="button" class="button" onClick={onConfirm}>
+        {/* Every caller of this dialog is asking about something that cannot
+            be undone — a match, a CV, the whole account — so the confirm
+            button wears the destructive weight rather than the app's most
+            inviting one. The click that deletes should not look like the
+            click that runs a match. */}
+        <button type="button" class="button button--danger" onClick={onConfirm}>
           {confirmLabel}
         </button>
       </div>

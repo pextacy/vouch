@@ -1,0 +1,194 @@
+/* A list of postings in the order the evidence supports, not a table and not a
+   scoreboard. Four columns of numbers would be unreadable at 360 px and would
+   invite the eye to compare percentages that do not exist — the numbers here
+   are counts, and they are set as sentences for exactly that reason. */
+
+.compare__picker {
+  max-width: var(--measure);
+  margin: 0;
+  padding: var(--space-4) 0 0;
+  border: 0;
+  border-top: 1px solid var(--rule);
+}
+
+.compare__legend {
+  padding: 0;
+  font-size: var(--size-s);
+  --track: 0;
+  font-weight: 500;
+}
+
+.compare__hint {
+  margin-top: var(--space-1);
+}
+
+.compare__options {
+  display: flex;
+  flex-direction: column;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The whole row is the target, so a thumb has somewhere to land. */
+.compare__option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  padding: var(--space-1) 0;
+  cursor: pointer;
+}
+
+.compare__option--on {
+  font-weight: 500;
+}
+
+/* The box is drawn rather than native: a native checkbox is 18 px, and the
+   mobile floor for anything you tap is 44 — which the label is. */
+.compare__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-input);
+  color: var(--ink);
+}
+
+.compare__option--on .compare__mark {
+  border-color: var(--ink);
+}
+
+.compare__option:has(:focus-visible) {
+  outline: 2px solid var(--pencil);
+  outline-offset: 2px;
+}
+
+.compare__option:has(:disabled) {
+  color: var(--graphite);
+  cursor: not-allowed;
+}
+
+.compare__optionText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.compare__need {
+  max-width: var(--measure);
+  color: var(--graphite);
+}
+
+.compare__columns {
+  display: flex;
+  flex-direction: column;
+  margin: var(--space-6) 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: posting;
+}
+
+.compare__row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-6) 0;
+  border-top: 1px solid var(--rule);
+}
+
+/* The rank is the position in the list, said out loud rather than drawn as a
+   medal: it is the order the evidence supports and nothing more. */
+.compare__row::before {
+  counter-increment: posting;
+  content: counter(posting);
+  color: var(--graphite);
+  font-variant-numeric: tabular-nums;
+}
+
+.compare__role {
+  font-size: var(--size-l);
+  font-weight: 500;
+  margin: 0;
+  max-width: var(--measure);
+}
+
+.compare__count {
+  margin: 0;
+  max-width: var(--measure);
+}
+
+.compare__terms {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-width: var(--measure);
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* What is standing in the way reads as a quotation of the posting, set apart
+   the way the letter's citations and the recurring view's wordings are. */
+.compare__terms--blockers {
+  padding-inline-start: var(--space-3);
+  border-inline-start: 2px solid var(--rule);
+}
+
+.compare__termsLabel {
+  font-size: var(--size-xs);
+  font-weight: 500;
+  color: var(--graphite);
+  margin: 0;
+}
+
+.compare__ordering {
+  max-width: var(--measure);
+  margin-top: var(--space-4);
+}
+
+.compare__shared {
+  max-width: var(--measure);
+  margin-top: var(--space-8);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--rule);
+}
+
+.compare__sharedHeading {
+  font-size: var(--size-s);
+  --track: 0;
+  font-weight: 500;
+  margin: 0;
+}
+
+.compare__sharedTerm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2) 0;
+}
+
+.compare__term {
+  font-weight: 500;
+}
+
+.compare__wordings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding-inline-start: var(--space-3);
+  border-inline-start: 2px solid var(--rule);
+  list-style: none;
+  font-family: var(--font-doc);
+  line-height: var(--leading-doc);
+  color: var(--graphite);
+}
+
+.compare__row .compare__open {
+  padding-inline: 0;
+}

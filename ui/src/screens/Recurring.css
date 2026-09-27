@@ -1,0 +1,101 @@
+/* A list of gaps, heaviest first — no bars, no percentages, no chart. The
+   number that matters is "9 of your last 14", which is a sentence a person can
+   check against their own memory; a bar chart of four rows would be decoration
+   standing in for that. */
+
+.recurring__read {
+  color: var(--graphite);
+  max-width: var(--measure);
+}
+
+.recur {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-6) 0;
+}
+
+.recur__subject {
+  font-size: var(--size-l);
+  font-weight: 500;
+  margin: 0;
+  max-width: var(--measure);
+}
+
+.recur__count {
+  max-width: var(--measure);
+}
+
+.recur__must {
+  max-width: var(--measure);
+  color: var(--graphite);
+}
+
+/* Aligned with the heading above it rather than indented by the button's own
+   padding: it sits in a column of text, not in a row of actions. */
+.recur .recur__toggle {
+  padding-inline: 0;
+}
+
+/* The wordings that were grouped: set as the postings wrote them, so they read
+   as quotations rather than as the app's own phrasing. */
+.recur__texts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-width: var(--measure);
+  margin: 0;
+  padding-inline-start: var(--space-3);
+  border-inline-start: 2px solid var(--rule);
+  list-style: none;
+  font-family: var(--font-doc);
+  line-height: var(--leading-doc);
+  color: var(--graphite);
+}
+
+.recur__answer {
+  max-width: var(--measure);
+  width: 100%;
+}
+
+.recur__label {
+  font-size: var(--size-xs);
+  color: var(--graphite);
+}
+
+.recur__input {
+  min-height: 84px;
+  font-family: var(--font-doc);
+  line-height: var(--leading-doc);
+}
+
+.recur__saved {
+  max-width: var(--measure);
+  color: var(--graphite);
+}
+
+/* The other half of the report. Quieter than the gaps — it is context for
+   reading them, not a second list to work through. */
+.recurring__strengths {
+  max-width: var(--measure);
+  margin-top: var(--space-8);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--rule);
+}
+
+.recurring__group {
+  font-size: var(--size-s);
+  --track: 0;
+  font-weight: 500;
+  margin: 0;
+}
+
+.recurring__strengthList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

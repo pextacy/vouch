@@ -34,6 +34,67 @@ Nice to have
 - Familiarity with Kafka`;
 
 /**
+ * Further postings that want some of the same things.
+ *
+ * The recurring view refuses to say anything below three applications — a
+ * pattern drawn from two would be a horoscope — so a screen shot of it needs
+ * three. All three ask for Kafka and Terraform, which the example CV cannot
+ * prove, and all three ask for Go and PostgreSQL, which it can: that is the
+ * shape the screen exists to tell apart, a real gap from a real strength.
+ */
+const EXTRA_POSTINGS = [
+  `Platform Engineer — Harborline (Hybrid, Istanbul)
+
+Requirements
+- 4+ years building backend services
+- Go or a similar compiled language in production
+- Production experience with Kafka or a similar event bus
+- Working knowledge of PostgreSQL and schema migrations
+
+Nice to have
+- Familiarity with Terraform
+- Exposure to payments or settlement systems`,
+
+  `Senior Backend Engineer — Vantage Clearing (Remote)
+
+Requirements
+- Backend engineering experience in Go
+- Working knowledge of PostgreSQL and schema migrations
+- Production experience with Kafka or a similar event bus
+- Comfortable being on call for what you ship
+
+Nice to have
+- Familiarity with Terraform
+- Settlement or reconciliation background`,
+];
+
+/**
+ * Run more matches, so a cross-application screen has something to cross.
+ *
+ * Starts from the New match screen of an app that already has a CV, which is
+ * where `runLiveMatch` leaves it. Returns the route of the last one run.
+ */
+export async function runExtraMatches(page, base, count) {
+  let route = null;
+  for (let index = 0; index < count && index < EXTRA_POSTINGS.length; index += 1) {
+    await page.evaluate(() => {
+      window.location.hash = "/new";
+    });
+    await page.waitForSelector("#posting", { timeout: 15_000 });
+    await page.fill("#posting", EXTRA_POSTINGS[index]);
+    await page.getByRole("button", { name: "Run match", exact: true }).click();
+    await page.waitForFunction(
+      () => /^#\/match\/(?!example)/.test(window.location.hash),
+      null,
+      { timeout: 30_000 },
+    );
+    await page.waitForSelector(".map", { timeout: 15_000 });
+    route = await page.evaluate(() => window.location.hash.slice(1));
+  }
+  return route;
+}
+
+/**
  * Leaves the page on the match map of a freshly run match.
  *
  * Returns its route (`/match/<id>`) so a caller can come back to it after
@@ -78,6 +139,92 @@ export async function runLiveMatch(page, base) {
 
   return page.evaluate(() => window.location.hash.slice(1));
 }
+
+/**
+ * Run the *same* posting a second time.
+ *
+ * The same text means the same posting hash, which is what pairs the two runs
+ * in the tracker — so this is the only way to reach "what changed", and the
+ * state the whole answer loop points at: a CV line written between two runs of
+ * one job. Run it after `answerAGap` or the second run has nothing new to
+ * stand on.
+ */
+export async function runSamePostingAgain(page, base) {
+  await page.evaluate(() => {
+    window.location.hash = "/new";
+  });
+  await page.waitForSelector("#posting", { timeout: 15_000 });
+  await page.fill("#posting", POSTING);
+  await page.getByRole("button", { name: "Run match", exact: true }).click();
+  await page.waitForFunction(
+    () => /^#\/match\/(?!example)/.test(window.location.hash),
+    null,
+    { timeout: 30_000 },
+  );
+  await page.waitForSelector(".map", { timeout: 15_000 });
+  return page.evaluate(() => window.location.hash.slice(1));
+}
+
+/**
+ * Answer one gap question, the way a user does a week after applying.
+ *
+ * It is the only way to reach the state "since you applied" exists for: a CV
+ * line written *after* an application went out. Nothing else in this flow
+ * produces one, so without it that screen can only ever be walked empty.
+ *
+ * The sentence names Kafka on purpose — the example posting asks for it and
+ * the example CV cannot show it, which is exactly the shape the screen
+ * reports.
+ */
+export async function answerAGap(page, base) {
+  await goTo(page, "/gaps", ".screen");
+  const box = page.locator(".gap__input").first();
+  if ((await box.count()) === 0) return false;
+  await box.fill("Owned the Kafka consumer rewrite at Acme Payments in 2023.");
+  await page.locator(".gap__answer .button").first().click();
+  await page.waitForSelector(".gap__saved", { timeout: 15_000 });
+  return true;
+}
+
+/**
+ * Add a second CV, so the screens that switch between them have something to
+ * switch between.
+ *
+ * Pasted rather than uploaded: the stub hands back the example CV for any
+ * file, and two CVs that are the same document tell a reviewer nothing about
+ * whether the switch works. It also leaves the new CV unnamed, which is the
+ * "CV 2" fallback a real user meets when they paste rather than upload.
+ *
+ * Note that this switches the workspace: the tracker is empty afterwards,
+ * because the applications belong to the first CV. Run it after every screen
+ * that needs those applications.
+ */
+export async function runExtraCv(page, base) {
+  await goTo(page, "/cv/preview", ".screen");
+  await page.getByRole("button", { name: "Add another CV", exact: true }).click();
+  await page.waitForSelector("#cv-text", { timeout: 15_000 });
+  await page.fill("#cv-text", SECOND_CV);
+  await page.getByRole("button", { name: "Use this text", exact: true }).click();
+  await page.waitForFunction(() => window.location.hash.startsWith("#/cv/preview"), null, {
+    timeout: 15_000,
+  });
+  return "/cv/preview";
+}
+
+/** Long enough to clear the 200-character floor on "Use this text". */
+const SECOND_CV = `Dilek Aydin — Data Engineer, Istanbul
+
+Experience
+Acme Payments — Data Engineer, 2018-2024
+Built the settlement reporting warehouse in Python and dbt.
+Ran the nightly Airflow jobs that fed the finance team's dashboards.
+Owned data quality checks across twelve upstream sources.
+
+Education
+MSc Computer Science, Bogazici University, 2016
+
+Skills
+Python, SQL, dbt, Airflow, PostgreSQL`;
 
 /** Navigate within the running app, the way a tap on a link would. */
 export async function goTo(page, route, selector) {

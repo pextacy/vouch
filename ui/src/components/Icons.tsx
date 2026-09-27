@@ -1,7 +1,7 @@
 /**
  * The icon set, drawn for this app.
  *
- * Six shapes, 16px, 1.5px stroke, all inheriting `currentColor`. An
+ * Nine shapes, 16px, 1.5px stroke, all inheriting `currentColor`. An
  * off-the-shelf icon library would bring a house style that is not this one —
  * and the highlighter tip and the bracket are the two shapes that carry the
  * product's meaning, so they had to be drawn anyway.
@@ -26,6 +26,16 @@ function frame({ title, size = 16 }: IconProps) {
     role: (title ? "img" : undefined) as "img" | undefined,
     "aria-hidden": title ? undefined : true,
   };
+}
+
+/** Picked: the tick inside a chosen checkbox. */
+export function CheckIcon(props: IconProps) {
+  return (
+    <svg {...frame(props)}>
+      {props.title && <title>{props.title}</title>}
+      <path d="M3.5 8.5 6.5 11.5 12.5 4.5" />
+    </svg>
+  );
 }
 
 /** Evidenced: a highlighter tip laying down a stroke. */

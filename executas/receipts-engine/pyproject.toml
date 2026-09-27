@@ -3,7 +3,7 @@
 # `python scripts/set-tool-id.py apply --tool <minted>` rewrites all of them.
 [project]
 name = "tool-dev-receipts-engine"
-version = "1.0.1"
+version = "1.3.0"
 description = "Receipts Engine — Executa stdio tool plugin for the Receipts Anna App"
 requires-python = ">=3.12"
 authors = [{ name = "Receipts" }]

@@ -1,0 +1,32 @@
+/* Two things to copy, in the order they are pasted: the headline, then the
+   About. The headline is set at the size it is read at — it is one line and
+   the first line anyone sees — and the About sits on a sheet like every other
+   document this app hands over. */
+
+.profile__section {
+  max-width: var(--measure);
+  padding-top: var(--space-6);
+}
+
+.profile__section h2 {
+  font-size: var(--size-m);
+  font-weight: 500;
+  --track: 0;
+}
+
+.profile__headline {
+  font-family: var(--font-doc);
+  line-height: var(--leading-doc);
+  font-size: var(--size-m);
+  max-width: var(--measure);
+}
+
+.profile__chips {
+  gap: var(--space-2);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.profile__actions {
+  margin-top: var(--space-8);
+}

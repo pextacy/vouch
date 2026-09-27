@@ -10,12 +10,26 @@ export type Route =
   | { name: "onboarding" }
   | { name: "cv-add" }
   | { name: "cv-preview" }
+  | { name: "cv-audit" }
+  | { name: "cv-ledger" }
+  | { name: "cv-profile" }
+  | { name: "check" }
   | { name: "new-match" }
   | { name: "progress" }
   | { name: "match"; id: string }
   | { name: "tailor" }
+  | { name: "gaps" }
   | { name: "letter" }
+  | { name: "answers" }
+  | { name: "share" }
+  | { name: "brief" }
+  | { name: "since" }
+  | { name: "followup" }
+  | { name: "changed" }
+  | { name: "worth" }
   | { name: "tracker" }
+  | { name: "recurring" }
+  | { name: "compare" }
   | { name: "settings" };
 
 export const route = signal<Route>(parse(currentHash()));
@@ -33,7 +47,13 @@ export function parse(path: string): Route {
     case undefined:
       return { name: "onboarding" };
     case "cv":
-      return parts[1] === "preview" ? { name: "cv-preview" } : { name: "cv-add" };
+      if (parts[1] === "preview") return { name: "cv-preview" };
+      if (parts[1] === "audit") return { name: "cv-audit" };
+      if (parts[1] === "ledger") return { name: "cv-ledger" };
+      if (parts[1] === "profile") return { name: "cv-profile" };
+      return { name: "cv-add" };
+    case "check":
+      return { name: "check" };
     case "new":
       return { name: "new-match" };
     case "progress":
@@ -42,10 +62,30 @@ export function parse(path: string): Route {
       return parts[1] ? { name: "match", id: parts[1] } : { name: "tracker" };
     case "tailor":
       return { name: "tailor" };
+    case "gaps":
+      return { name: "gaps" };
     case "letter":
       return { name: "letter" };
+    case "answers":
+      return { name: "answers" };
+    case "share":
+      return { name: "share" };
+    case "brief":
+      return { name: "brief" };
+    case "since":
+      return { name: "since" };
+    case "followup":
+      return { name: "followup" };
+    case "changed":
+      return { name: "changed" };
+    case "worth":
+      return { name: "worth" };
     case "matches":
       return { name: "tracker" };
+    case "recurring":
+      return { name: "recurring" };
+    case "compare":
+      return { name: "compare" };
     case "data":
       return { name: "settings" };
     default:
