@@ -224,5 +224,6 @@ anna-app validate --strict        # before every commit
 - [ ] `pnpm a11y` and `pnpm type` clean; 360 px and desktop screenshots
       reviewed against the prohibitions above
 - [ ] `pnpm check` and `pnpm lint:engine` clean
-- [ ] Related docs updated — `docs/` is the only prose in the repository, so a
-      change that makes a sentence there false is not finished
+- [ ] Related docs updated — `docs/` and the root `README.md` are the only
+      prose in the repository, so a change that makes a sentence there false is
+      not finished
