@@ -1,4 +1,4 @@
-# Receipts — Technical & Operational Plan
+# Vouch — Technical & Operational Plan
 
 This document covers **how** we build and **how** we grow. For what we build see `prd.md`; for contracts, schemas and the design system see `docs.md`.
 
@@ -76,13 +76,13 @@ This document covers **how** we build and **how** we grow. For what we build see
 │ verify/grounding.py  "Invent nothing" deterministic verifier        │
 │ export/docx.py       DOCX out: tailored output, and the CV itself   │
 └─────────────────────────────────────────────────────────────────────┘
-executas/receipts-coach/SKILL.md → #receipts chat behavior
+executas/receipts-coach/SKILL.md → #vouch chat behavior
 ```
 
 ## 3. Repository layout
 
 ```
-receipts/
+vouch/
 ├── app.json                      # listing metadata (slug, name, category)
 ├── manifest.json                 # AppManifest schema 2
 ├── package.json                  # @anna-ai/cli devDependency, scripts
@@ -219,7 +219,7 @@ the 12 cases**, the new one not at all.
 
 **Not** taken: `executa-sdk` (the helper used by Anna's own examples) is not
 published on PyPI and the examples resolve it through a relative path. The
-three frames Receipts needs — the v2 handshake, `sampling/createMessage` and
+three frames Vouch needs — the v2 handshake, `sampling/createMessage` and
 `executa/progress` — are ~200 dependency-free lines in
 `receipts_engine/host/`, written against the verified wire format.
 
@@ -317,12 +317,12 @@ Reality check: review takes up to 5 business days and results are sent in batche
 | Sec | Visual | Voiceover |
 |---|---|---|
 | 0–8 | Another AI tool's invented bullet ("increased revenue by 40%") gets struck through | "Most AI resume tools make things up. Recruiters notice." |
-| 8–20 | Receipts opens, CV already saved, posting pasted | "Receipts starts from what you've actually done." |
+| 8–20 | Vouch opens, CV already saved, posting pasted | "Vouch starts from what you've actually done." |
 | 20–40 | Progress: requirements appear, yellow marks sweep as evidence is found | "Every requirement is checked against a real line in your CV." |
 | 40–55 | Match map: evidenced / related / no evidence; tapping evidence highlights line L23 | "You see the evidence — and the honest gaps." |
 | 55–72 | Tailor: suggestion with source chip; one suggestion shows "couldn't strengthen without inventing" | "If your CV can't prove it, it doesn't get written." |
 | 72–84 | Cover letter with citations, DOCX download | "A cover letter that comes with receipts." |
-| 84–90 | Logo + subtitle + Anna Store link | "Receipts. Tailor every application. Invent nothing." |
+| 84–90 | Logo + subtitle + Anna Store link | "Vouch. Tailor every application. Invent nothing." |
 
 ## 11. Cost estimate (per user, informational)
 

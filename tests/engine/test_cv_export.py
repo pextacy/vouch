@@ -47,7 +47,7 @@ def _read(b64: str) -> list[tuple[str, str]]:
 
 
 SAMPLE = _cv(
-    _line("L1", "Dilek Aydın — Backend Engineer, Istanbul", section="header"),
+    _line("L1", "Maya Collins — Backend Engineer, Berlin", section="header"),
     _line("L2", "Acme Payments — Backend Engineer, 2018–2024"),
     _line("L3", "Built payment reconciliation services in Go for 1,200 merchants."),
     _line("L4", "MSc Computer Science, Boğaziçi University, 2016", section="education"),
@@ -75,7 +75,7 @@ def test_the_document_adds_no_sentence_of_its_own() -> None:
     extra = [text for style, text in _read(content) if text and text not in own]
 
     assert extra == ["Experience", "Education", "Skills"]
-    assert not any("Receipts" in text for _, text in _read(content))
+    assert not any("Vouch" in text for _, text in _read(content))
 
 
 # ─── Reading order ────────────────────────────────────────────────────
@@ -92,13 +92,13 @@ def test_an_added_line_prints_inside_its_own_section_not_at_the_end() -> None:
 def test_sections_come_out_in_reading_order() -> None:
     texts = [text for style, text in _read(build_cv_docx(cv=SAMPLE, mode="full")[1]) if text]
 
-    assert texts[0] == "Dilek Aydın — Backend Engineer, Istanbul"
+    assert texts[0] == "Maya Collins — Backend Engineer, Berlin"
     assert texts.index("Experience") < texts.index("Education") < texts.index("Skills")
 
 
 def test_the_header_gets_no_heading_above_it() -> None:
     rendered = _read(build_cv_docx(cv=SAMPLE, mode="full")[1])
-    assert rendered[0] == ("Normal", "Dilek Aydın — Backend Engineer, Istanbul")
+    assert rendered[0] == ("Normal", "Maya Collins — Backend Engineer, Berlin")
 
 
 def test_lines_keep_their_order_within_a_section() -> None:
@@ -124,7 +124,7 @@ def test_the_additions_sheet_says_what_it_is() -> None:
     """It is a worksheet for the user, not a document for an employer."""
     _, content, _ = build_cv_docx(cv=SAMPLE, mode="additions", locale="en")
     texts = [text for _, text in _read(content)]
-    assert any("Receipts" in text and "rewritten" in text for text in texts)
+    assert any("Vouch" in text and "rewritten" in text for text in texts)
 
 
 def test_additions_are_refused_when_the_user_has_added_nothing() -> None:

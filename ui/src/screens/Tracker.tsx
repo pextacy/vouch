@@ -2,7 +2,7 @@
  * Saved matches.
  *
  * This is the retention screen: opening a row reloads the match from storage
- * with no model call, and the status select is why someone opens Receipts on a
+ * with no model call, and the status select is why someone opens Vouch on a
  * day they are not applying to anything new.
  */
 

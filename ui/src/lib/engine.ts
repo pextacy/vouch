@@ -1,5 +1,5 @@
 /**
- * Typed calls into the Receipts engine Executa.
+ * Typed calls into the Vouch engine Executa.
  *
  * Two channels, chosen by how long the work takes:
  *

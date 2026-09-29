@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""receipts-engine — the Executa stdio plugin behind Receipts.
+"""receipts-engine — the Executa stdio plugin behind Vouch.
 
 One tool method, ``engine``, with an ``action`` discriminator. One Executa row
 per app is the pattern the platform expects; adding a tool per behaviour would
@@ -107,7 +107,7 @@ def _tool_id() -> str:
 
 MANIFEST: Final[dict[str, Any]] = {
     "name": _tool_id(),
-    "display_name": "Receipts Engine",
+    "display_name": "Vouch Engine",
     "version": __version__,
     "description": (
         "Parses a CV into numbered lines, extracts the stated requirements from a job "
@@ -115,7 +115,7 @@ MANIFEST: Final[dict[str, Any]] = {
         "rewrites bullets and cover letters that a deterministic verifier has proved "
         "are grounded in the CV."
     ),
-    "author": "Receipts",
+    "author": "Vouch",
     "license": "MIT",
     "tags": ["career", "cv", "resume", "job-search", "anna-app"],
     # Without this the host refuses every sampling/createMessage with -32008,
@@ -126,7 +126,7 @@ MANIFEST: Final[dict[str, Any]] = {
         {
             "name": TOOL_NAME,
             "description": (
-                "Receipts engine. Pick a behaviour with `action`: "
+                "Vouch engine. Pick a behaviour with `action`: "
                 "`health` (liveness), "
                 "`upload_chunk` (stream a CV file in base64 pieces), "
                 "`discard_upload` (drop one buffered upload by id), "

@@ -1,5 +1,5 @@
 /**
- * Checking a document Receipts did not write.
+ * Checking a document Vouch did not write.
  *
  * Three things carry the weight here and none of them is the verifier, which
  * has its own suite in Python:
@@ -44,13 +44,13 @@ const { parse } = await import("../../ui/src/router");
 const state = await import("../../ui/src/state");
 
 const CV_TEXT = [
-  "Dilek Aydin — Backend Engineer",
+  "Maya Collins — Backend Engineer",
   "Experience",
   "Acme Payments — Backend Engineer, 2018-2024",
   "Built payment reconciliation services in Go for merchant accounts.",
   "Migrated the reporting pipeline from MySQL to PostgreSQL.",
   "Education",
-  "MSc Computer Science, Bogazici University, 2016",
+  "MSc Computer Science, University of Edinburgh, 2016",
 ].join("\n");
 
 beforeAll(async () => {

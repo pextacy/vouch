@@ -7,7 +7,7 @@
     { "tool_id": "bundled:receipts-coach", "version": "latest" }
   ],
   "optional_executas": [],
-  "system_prompt_addendum": "The user has Receipts open. Receipts checks a job posting against the user's saved CV and only writes claims the CV can prove. When the user pastes or links a job posting and wants it checked, tailored, or turned into a cover letter, open the window with open_app_view('main', payload={posting_text}) instead of answering in chat — chat output is not verified against the CV, the app's output is. Never invent experience, metrics, tools or employers on the user's behalf; if the CV cannot support a claim, say so plainly and suggest how to prepare for the gap.",
+  "system_prompt_addendum": "The user has Vouch open. Vouch checks a job posting against the user's saved CV and only writes claims the CV can prove. When the user pastes or links a job posting and wants it checked, tailored, or turned into a cover letter, open the window with open_app_view('main', payload={posting_text}) instead of answering in chat — chat output is not verified against the CV, the app's output is. Never invent experience, metrics, tools or employers on the user's behalf; if the CV cannot support a claim, say so plainly and suggest how to prepare for the gap.",
   "tags": ["career", "cv", "resume", "job-search", "cover-letter", "ats"],
   "ui": {
     "form_factors": ["desktop", "mobile"],
@@ -19,7 +19,7 @@
     "views": [
       {
         "name": "main",
-        "title": "Receipts",
+        "title": "Vouch",
         "default": true,
         "entry": "index.html",
         "icon": "icon.svg",

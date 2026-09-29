@@ -46,7 +46,7 @@ const { EXAMPLE_MATCH } = await import("../../ui/src/lib/example");
 const state = await import("../../ui/src/state");
 
 const CV_TEXT = [
-  "Dilek Aydin — Backend Engineer",
+  "Maya Collins — Backend Engineer",
   "Experience",
   "Acme Payments — Backend Engineer, 2018-2024",
   "Built payment reconciliation services in Go for 1,200 merchant accounts.",
@@ -54,7 +54,7 @@ const CV_TEXT = [
   "Ran the nightly settlement batch on our own scheduler.",
   "Led a team of 4 engineers and owned the on-call rotation.",
   "Education",
-  "MSc Computer Science, Bogazici University, 2016",
+  "MSc Computer Science, University of Edinburgh, 2016",
 ].join("\n");
 
 /** Real ids from the parsed fixture, rather than ones assumed off the page. */

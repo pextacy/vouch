@@ -1,5 +1,5 @@
 /**
- * The verifier, pointed at a document Receipts did not write.
+ * The verifier, pointed at a document Vouch did not write.
  *
  * Every other screen checks text this app produced. That guarantee ends where
  * the export does: someone pastes their tailored bullets into the CV they

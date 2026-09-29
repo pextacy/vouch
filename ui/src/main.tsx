@@ -22,7 +22,7 @@ if (root) {
   void boot().catch((error: unknown) => {
     // Booting is the one failure with no UI to show it in: surface it to the
     // host error log and leave a readable message behind.
-    root.textContent = "Receipts could not start. Reload the window.";
+    root.textContent = "Vouch could not start. Reload the window.";
     try {
       const anna = runtime() as { window?: { report_error?: (args: unknown) => void } };
       anna.window?.report_error?.({

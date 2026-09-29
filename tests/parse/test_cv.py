@@ -120,7 +120,7 @@ def test_pdf_text_is_extracted() -> None:
 def test_multi_page_pdf_keeps_every_page() -> None:
     doc = parse_cv(source="pdf", data=build_pdf(SAMPLE_CV_LINES, pages=2))
     joined = " ".join(line.text for line in doc.lines)
-    assert "Bogazici" in joined
+    assert "Edinburgh" in joined
 
 
 def test_oversized_file_is_rejected_before_parsing() -> None:

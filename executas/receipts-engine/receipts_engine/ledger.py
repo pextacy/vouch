@@ -26,7 +26,7 @@ never asked    lines no posting has ever needed. **Not** "cut these": the
                screen says so out loud. A line is uncited when the jobs the
                person applied to never asked about that work, which is a
                fact about the postings, not about the work.
-what you added the sentences the user typed into Receipts answering a gap,
+what you added the sentences the user typed into Vouch answering a gap,
                and what those have proved since. The payback of the answer
                loop, which until now the app asked for and never reported.
 =============  ============================================================

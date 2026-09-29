@@ -230,7 +230,7 @@ class CheckedLine(Strict):
 
 
 class DocumentCheck(Strict):
-    """The verifier's verdict on a document Receipts did not write.
+    """The verifier's verdict on a document Vouch did not write.
 
     Nothing here is stored: the document arrives, is read, and is gone. What
     survives a check is whatever the user chose to add to their CV afterwards,

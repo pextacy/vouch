@@ -34,8 +34,8 @@ from .fake_llm import FakeSampling
 
 CV_TEXT = "\n".join(
     [
-        "Dilek Aydin",
-        "Backend Engineer - Istanbul",
+        "Maya Collins",
+        "Backend Engineer - Berlin",
         "",
         "Experience",
         "Acme Payments - Backend Engineer, 2018-2024",
@@ -44,7 +44,7 @@ CV_TEXT = "\n".join(
         "Led a team of 4 engineers and owned the on-call rotation.",
         "",
         "Education",
-        "MSc Computer Science, Bogazici University, 2016",
+        "MSc Computer Science, University of Edinburgh, 2016",
     ]
 )
 

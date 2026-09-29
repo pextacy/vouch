@@ -26,8 +26,8 @@ def _subjects(audit: CvAudit, kind: str) -> list[str]:
 
 
 HONEST = [
-    "Dilek Aydin",
-    "Backend Engineer - Istanbul",
+    "Maya Collins",
+    "Backend Engineer - Berlin",
     "",
     "Experience",
     "Acme Payments - Backend Engineer, 2018-2024",
@@ -59,7 +59,7 @@ def test_a_skill_listed_but_never_used_is_reported() -> None:
     """The single most probed line on any CV: "where did you use this?"."""
     audit = audit_cv(
         _cv(
-            "Dilek Aydin",
+            "Maya Collins",
             "",
             "Experience",
             "Acme Payments - Backend Engineer, 2018-2024",
@@ -75,7 +75,7 @@ def test_a_skill_listed_but_never_used_is_reported() -> None:
 def test_a_skill_shown_in_a_project_counts_as_evidenced() -> None:
     audit = audit_cv(
         _cv(
-            "Dilek Aydin",
+            "Maya Collins",
             "",
             "Experience",
             "Acme Payments - Backend Engineer, 2018-2024",
@@ -94,7 +94,7 @@ def test_a_skill_shown_in_a_project_counts_as_evidenced() -> None:
 def test_a_cv_with_no_skills_section_is_not_audited_for_skills() -> None:
     audit = audit_cv(
         _cv(
-            "Dilek Aydin",
+            "Maya Collins",
             "",
             "Experience",
             "Acme Payments - Backend Engineer, 2018-2024",
@@ -106,7 +106,7 @@ def test_a_cv_with_no_skills_section_is_not_audited_for_skills() -> None:
 
 def test_a_cv_that_is_only_a_skills_list_is_left_alone() -> None:
     """It has one problem and this is not it; listing every term is noise."""
-    audit = audit_cv(_cv("Dilek Aydin", "", "Skills", "Go, Kubernetes, Terraform, Kafka"))
+    audit = audit_cv(_cv("Maya Collins", "", "Skills", "Go, Kubernetes, Terraform, Kafka"))
     assert _subjects(audit, "skill_unevidenced") == []
 
 
@@ -116,7 +116,7 @@ def test_a_cv_that_is_only_a_skills_list_is_left_alone() -> None:
 def test_seniority_in_the_header_that_no_role_carries_is_reported() -> None:
     audit = audit_cv(
         _cv(
-            "Dilek Aydin",
+            "Maya Collins",
             "Senior Backend Engineer",
             "",
             "Experience",
@@ -130,7 +130,7 @@ def test_seniority_in_the_header_that_no_role_carries_is_reported() -> None:
 def test_a_title_the_roles_do_carry_is_not_reported() -> None:
     audit = audit_cv(
         _cv(
-            "Dilek Aydin",
+            "Maya Collins",
             "Senior Backend Engineer",
             "",
             "Experience",
@@ -143,7 +143,7 @@ def test_a_title_the_roles_do_carry_is_not_reported() -> None:
 
 def test_a_cv_with_no_experience_section_is_not_audited_for_titles() -> None:
     """A new graduate's CV is not lying by having a headline."""
-    audit = audit_cv(_cv("Dilek Aydin", "Junior Developer", "", "Education", "MSc, 2016"))
+    audit = audit_cv(_cv("Maya Collins", "Junior Developer", "", "Education", "MSc, 2016"))
     assert _subjects(audit, "title_unevidenced") == []
 
 
@@ -153,7 +153,7 @@ def test_a_cv_with_no_experience_section_is_not_audited_for_titles() -> None:
 def test_a_range_that_ends_before_it_starts_is_reported() -> None:
     audit = audit_cv(
         _cv(
-            "Dilek Aydin",
+            "Maya Collins",
             "",
             "Experience",
             "Acme Payments - Backend Engineer, 2024-2018",
@@ -167,7 +167,7 @@ def test_two_roles_overlapping_for_years_are_reported() -> None:
     """Usually innocent — consulting, a second job — which is why it gets asked."""
     audit = audit_cv(
         _cv(
-            "Dilek Aydin",
+            "Maya Collins",
             "",
             "Experience",
             "Acme Payments - Backend Engineer, 2018-2024",
@@ -183,7 +183,7 @@ def test_a_short_overlap_is_left_alone() -> None:
     """A notice period is not a discrepancy."""
     audit = audit_cv(
         _cv(
-            "Dilek Aydin",
+            "Maya Collins",
             "",
             "Experience",
             "Acme Payments - Backend Engineer, 2018-2021",
@@ -199,7 +199,7 @@ def test_a_short_overlap_is_left_alone() -> None:
 def test_consecutive_roles_are_left_alone() -> None:
     audit = audit_cv(
         _cv(
-            "Dilek Aydin",
+            "Maya Collins",
             "",
             "Experience",
             "Acme Payments - Backend Engineer, 2015-2018",
@@ -214,7 +214,7 @@ def test_consecutive_roles_are_left_alone() -> None:
 def test_an_open_range_is_not_a_conflict_by_itself() -> None:
     audit = audit_cv(
         _cv(
-            "Dilek Aydin",
+            "Maya Collins",
             "",
             "Experience",
             "Acme Payments - Backend Engineer, 2018-present",
@@ -231,7 +231,7 @@ def test_a_finding_carries_no_prose() -> None:
     """The sentence is the UI's, in the user's language — same as error codes."""
     audit = audit_cv(
         _cv(
-            "Dilek Aydin",
+            "Maya Collins",
             "",
             "Experience",
             "Acme Payments - Backend Engineer, 2018-2024",
@@ -249,7 +249,7 @@ def test_a_finding_carries_no_prose() -> None:
 
 def test_every_cited_line_exists_in_the_cv() -> None:
     cv = _cv(
-        "Dilek Aydin",
+        "Maya Collins",
         "Senior Backend Engineer",
         "",
         "Experience",
@@ -276,7 +276,7 @@ def test_a_skill_the_cv_rules_out_is_not_a_claim() -> None:
     """
     audit = audit_cv(
         _cv(
-            "Dilek Aydin",
+            "Maya Collins",
             "",
             "Experience",
             "Acme Payments - Backend Engineer, 2018-2024",
@@ -311,7 +311,7 @@ def test_a_finding_carries_the_spelling_the_cv_uses() -> None:
     """
     audit = audit_cv(
         _cv(
-            "Dilek Aydin",
+            "Maya Collins",
             "",
             "Experience",
             "Acme Payments - Backend Engineer, 2018-2024",
@@ -329,7 +329,7 @@ def test_a_synonym_is_shown_as_the_cv_wrote_it_not_as_the_lexicon_knows_it() -> 
     """The case a UI-side workaround cannot get right: k8s is not "kubernetes"."""
     audit = audit_cv(
         _cv(
-            "Dilek Aydin",
+            "Maya Collins",
             "",
             "Experience",
             "Acme Payments - Backend Engineer, 2018-2024",
@@ -347,7 +347,7 @@ def test_a_synonym_is_shown_as_the_cv_wrote_it_not_as_the_lexicon_knows_it() -> 
 def test_a_title_is_shown_capitalised_the_way_it_was_claimed() -> None:
     audit = audit_cv(
         _cv(
-            "Dilek Aydin",
+            "Maya Collins",
             "Senior Backend Engineer",
             "",
             "Experience",
@@ -362,7 +362,7 @@ def test_a_title_is_shown_capitalised_the_way_it_was_claimed() -> None:
 def test_a_date_span_is_its_own_surface() -> None:
     audit = audit_cv(
         _cv(
-            "Dilek Aydin",
+            "Maya Collins",
             "",
             "Experience",
             "Acme Payments - Backend Engineer, 2024-2018",
@@ -377,7 +377,7 @@ def test_every_finding_has_a_surface() -> None:
     """The UI renders `surface` unconditionally; an empty one would be a hole."""
     audit = audit_cv(
         _cv(
-            "Dilek Aydin",
+            "Maya Collins",
             "Senior Backend Engineer",
             "",
             "Experience",

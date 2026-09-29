@@ -1,4 +1,4 @@
-"""The verifier, read against a document Receipts did not write.
+"""The verifier, read against a document Vouch did not write.
 
 Two failure modes matter here and they pull in opposite directions. A missed
 claim is the product's whole promise broken on the one document that actually

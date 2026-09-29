@@ -96,9 +96,9 @@ def build_docx(paragraphs: list[str], *, table: list[list[str]] | None = None) -
 
 
 SAMPLE_CV_LINES = [
-    "Dilek Aydin",
-    "Backend Engineer - Istanbul",
-    "dilek@example.com",
+    "Maya Collins",
+    "Backend Engineer - Berlin",
+    "maya@example.com",
     "",
     "Experience",
     "Acme Payments - Backend Engineer, 2018-2024",
@@ -108,7 +108,7 @@ SAMPLE_CV_LINES = [
     "Reduced settlement errors by 18% across the ledger.",
     "",
     "Education",
-    "MSc Computer Science, Bogazici University, 2016",
+    "MSc Computer Science, University of Edinburgh, 2016",
     "",
     "Skills",
     "Go, Python, PostgreSQL, Kubernetes, Kafka, Terraform-free infra",

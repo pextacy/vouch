@@ -172,7 +172,7 @@ export interface CheckedLine {
 }
 
 /**
- * The verifier's verdict on a document Receipts did not write.
+ * The verifier's verdict on a document Vouch did not write.
  *
  * Nothing about it is stored. The document arrives, is read, and is gone; what
  * survives is whatever the user chose to add to their CV afterwards, in their

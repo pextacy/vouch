@@ -24,7 +24,7 @@ import type { CVDoc, CvLine, MatchResult } from "../../ui/src/lib/types";
 
 const SENT = "2026-09-12T09:00:00Z";
 
-/** The CV, plus a sentence the user wrote into Receipts on a given day. */
+/** The CV, plus a sentence the user wrote into Vouch on a given day. */
 function cvWith(line: Partial<CvLine> & { added_at: string }): CVDoc {
   return {
     ...EXAMPLE_CV,

@@ -39,13 +39,13 @@ const { parse } = await import("../../ui/src/router");
 const state = await import("../../ui/src/state");
 
 const CV_TEXT = [
-  "Dilek Aydin — Backend Engineer",
+  "Maya Collins — Backend Engineer",
   "Experience",
   "Acme Payments — Backend Engineer, 2018-2024",
   "Built payment reconciliation services in Go for merchant accounts.",
   "Migrated the reporting pipeline from MySQL to PostgreSQL.",
   "Education",
-  "MSc Computer Science, Bogazici University, 2016",
+  "MSc Computer Science, University of Edinburgh, 2016",
 ].join("\n");
 
 beforeAll(async () => {
@@ -117,8 +117,8 @@ describe("what the screen will run", () => {
   });
 
   it("drops a line the user struck off", () => {
-    state.questionDraft.value = "Describe your Go experience.\nOffice location: Istanbul";
-    state.skipQuestion("Office location: Istanbul");
+    state.questionDraft.value = "Describe your Go experience.\nOffice location: Amsterdam";
+    state.skipQuestion("Office location: Amsterdam");
     expect(state.detectedQuestions.value).toEqual(["Describe your Go experience."]);
   });
 });

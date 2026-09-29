@@ -1,9 +1,9 @@
-# Receipts — Product Requirements Document
+# Vouch — Product Requirements Document
 
-> **One line:** Receipts checks a job posting against your CV line by line, highlights the evidence for every requirement, then writes tailored CV bullets and a cover letter — **using only facts your CV can prove.**
+> **One line:** Vouch checks a job posting against your CV line by line, highlights the evidence for every requirement, then writes tailored CV bullets and a cover letter — **using only facts your CV can prove.**
 >
 > **Marketplace subtitle:** *Tailor every application. Invent nothing.*
-> **Slug:** `receipts` (fallback if taken: `receipts-cv`) · **Category:** productivity / career · **Languages:** English (default), Turkish
+> **Slug:** `vouch` (fallback if taken: `vouch-cv`) · **Category:** productivity / career · **Languages:** English (default), Turkish
 
 Status: v1.3.0, built and verified · Date: September 27, 2026 · Owner: (your name)
 
@@ -11,9 +11,9 @@ Status: v1.3.0, built and verified · Date: September 27, 2026 · Owner: (your n
 
 ## 1. Why this idea (decision rationale)
 
-The Anna Founding Builder Program is not judged by a panel; grants are paid on **Qualified App MAU**. The official rules create hard constraints, and Receipts is designed around each one:
+The Anna Founding Builder Program is not judged by a panel; grants are paid on **Qualified App MAU**. The official rules create hard constraints, and Vouch is designed around each one:
 
-| Program constraint (official rules) | How Receipts answers it |
+| Program constraint (official rules) | How Vouch answers it |
 |---|---|
 | MAU = unique signed-in users who **successfully** complete the primary function in a month. Opening or installing doesn't count. | The primary function ("Evidence Match") needs one input (a job posting) and completes in under 60 seconds. The CV is saved after first use, so repeat use is nearly frictionless. |
 | AI-native core required; superficial chatbots are rejected. | All value depends on AI reasoning: requirement extraction, evidence matching, grounded rewriting. There is no chat UI. |
@@ -23,7 +23,7 @@ The Anna Founding Builder Program is not judged by a panel; grants are paid on *
 | No app splitting, no artificial usage. | One app. Demo mode never calls the LLM and never produces a qualified run. No incentivized usage. |
 | Mobile support is coming (`form_factors`). | UI is designed mobile-first. |
 
-**Why the name "Receipts":** "Show me the receipts" means "prove it." The product's entire promise is proof: every requirement shows its evidence, every rewritten bullet shows its source line, and the cover letter comes with citations. It is one memorable word, easy to say in a demo, easy to search in the store, and it stands apart from the crowded "Resume/CV/Job + AI" naming pattern. Names considered and rejected: Shortlist (generic, widely used), Tailor (common verb, weak ownership), Proofline, Evident, Groundwork (less memorable).
+**Why the name "Vouch":** to vouch for a claim is to stand behind it — and the app only stands behind what the CV can show. Every requirement shows its evidence, every rewritten bullet shows its source line, and the cover letter comes with citations. It is one short word, easy to say in a demo and easy to search in the store, and it stands apart from the crowded "Resume/CV/Job + AI" naming pattern. The product was first built as *Receipts*, from "show me the receipts"; the internal identifiers (`receipts_engine`, `tool-dev-receipts-engine`, the `receipts:*` job tags and the storage keys) keep that name, because renaming them would orphan stored data and minted tool ids for no visible gain.
 
 **Market logic:** job seekers are a huge audience, every application is a new reason to return, the match map is screenshot-friendly, and career communities (Reddit, LinkedIn, university career clubs, bootcamps) are ready-made organic distribution. 200 → 1,000+ monthly users is realistic for this audience.
 
@@ -92,7 +92,7 @@ Every new version is re-reviewed, so v1.0 must be launch-ready and complete.
 - Retention engine: users come back to manage their applications here.
 
 ### F7 — Chat integration (Skill)
-- Typing `#receipts` in Anna chat with a pasted posting opens the app window with the posting prefilled.
+- Typing `#vouch` in Anna chat with a pasted posting opens the app window with the posting prefilled.
 
 ### F8 — Example preview
 - "See an example" on onboarding → a static, pre-recorded fixture. **No LLM call, not a qualified run.** Its job is to show the output, not to inflate MAU.
@@ -120,7 +120,7 @@ ended there, which is a diagnosis, not a plan.
 Why it is the differentiator rather than one more feature: every other AI
 resume tool closes a gap by writing the experience in for the candidate. The
 gap *is* the absence of evidence, so anything generated to fill it is a
-fabrication by construction. Receipts closes it the only honest way there is —
+fabrication by construction. Vouch closes it the only honest way there is —
 by asking, and by treating what the person says as the only admissible source.
 
 ### F10 — CV audit (v1.1)
@@ -153,7 +153,7 @@ The app was honest about one application at a time and learned nothing across
 them. Someone applies twenty times, the same requirement comes back unproven in
 fifteen of them, and nothing ever says so. That is the question a single match
 structurally cannot answer — *which gap is actually costing me jobs?* — and
-Receipts is the only app that can, because it already stores a verified
+Vouch is the only app that can, because it already stores a verified
 per-requirement verdict for every application the user has made.
 
 - Reached from the tracker once there is more than one match. **No model, no
@@ -174,7 +174,7 @@ per-requirement verdict for every application the user has made.
   the screen that tells the user which sentence is worth the most.
 
 This is also the strongest retention argument in the product: it gets better
-the more the user applies, and it gives someone a reason to open Receipts on a
+the more the user applies, and it gives someone a reason to open Vouch on a
 day they are not applying to anything new.
 
 ### F12 — Interview brief (v1.2)
@@ -195,7 +195,7 @@ what happened.
   Four shapes, each read off the evidence rather than judged: nothing in the
   CV shows it; the only evidence is the skills list, which the match accepted
   as proof and an interviewer will not; the only evidence is a line the user
-  typed into Receipts *after* sending the document; or the match called it
+  typed into Vouch *after* sending the document; or the match called it
   related rather than the same thing.
 - **"What you can prove"** is the other half, each with the CV's own line
   highlighted underneath. A brief that is only a list of weaknesses stops
@@ -275,7 +275,7 @@ evidence is such a line, and says "assume they have not read it."
   to paste, not a plain replacement for the layout they spent an evening on.
 - The screen says what the file is before the click: plain text, the way an
   ATS reads it, with the original layout gone and nothing rewritten. The full
-  CV carries no footer and no Receipts signature — a tool's name at the bottom
+  CV carries no footer and no Vouch signature — a tool's name at the bottom
   of someone's CV is the tool taking credit for their career.
 
 ### F15 — More than one CV (v1.2)
@@ -311,7 +311,7 @@ learn it.
 
 ### F16 — Check a document you didn't write (v1.3)
 
-The verifier is this product. Until now it only ever ran on text Receipts
+The verifier is this product. Until now it only ever ran on text Vouch
 itself wrote — a tailored bullet, a letter paragraph, a gap question's angle.
 That guarantee ends at the export, and the export is where people live: the
 bullets get pasted into the CV someone designed in Word, a line gets added at
@@ -345,7 +345,7 @@ names, sitting in a file the app could see and refused to look at.
   experience line is still checked like anything else.
 
 Why it is the differentiator rather than one more feature: every other tool in
-this category *produces* documents and vouches for nothing afterwards. Receipts
+this category *produces* documents and vouches for nothing afterwards. Vouch
 is the only one that can read a document it did not write and say — for free,
 deterministically, and without a model's opinion in it — which sentences an
 interviewer will take apart. Including one a competitor wrote.
@@ -444,7 +444,7 @@ when the record supports it.
 
 ### F19 — Answer what the form asked (v1.3)
 
-Receipts checks the bullets it rewrites and the letter it writes. Then the
+Vouch checks the bullets it rewrites and the letter it writes. Then the
 application form asks four more things in free text — *"Describe your
 experience with Kubernetes." "Tell us about a time you owned an incident."
 "Why do you want to work here?"* — a human reads every one of them, and the
@@ -503,7 +503,7 @@ same shape: a verdict, delivered, with no reply address.
   match, not inside it, so the record can always answer both questions: what
   the app found, and what the person said. It is shown the same way — under
   the verdict, behind a rule, in the user's own voice: *"You said these lines
-  cover it. Receipts didn't find it — so this one is yours to make."*
+  cover it. Vouch didn't find it — so this one is yours to make."*
 - **The counts stay the app's own.** The summary sentence — the one people
   screenshot — does not move. The corrections are reported on their own line:
   *"You marked 2 more as covered. Those are your call, not ours."*
@@ -517,7 +517,7 @@ same shape: a verdict, delivered, with no reply address.
   precisely what a recruiter will not find.
 - The interview brief is the one screen that reads corrections, where they
   arrive as their own risk, ranked second only to having no evidence at all:
-  *"You told Receipts a line covers this and Receipts couldn't see it. Nobody
+  *"You told Vouch a line covers this and Vouch couldn't see it. Nobody
   but you has agreed with that yet, so be ready to make the case out loud."*
 
 Only the constructive direction is offered — the app missing something the CV
@@ -526,7 +526,7 @@ to agree it was wrong about something it did find, which is a different
 feature and a different conversation.
 
 Why it is the differentiator: every other AI resume tool hands down a score you
-cannot argue with, produced by the same model that wrote the bullets. Receipts
+cannot argue with, produced by the same model that wrote the bullets. Vouch
 is the only one where the person whose career it is can correct it — and the
 only one that then remembers, all the way into the interview prep, that the
 correction was theirs.
@@ -671,7 +671,7 @@ ever going to read it.**
 - Every row ends at F18 for that application, which is where the re-run is
   offered. One screen, one job: this is the index, that is the detail.
 
-It is the strongest reason in the product to open Receipts on a day you are
+It is the strongest reason in the product to open Vouch on a day you are
 not applying to anything new — and, unlike a reminder, it is earned: the app
 only says an application is worth an hour when the user's own writing has made
 it so. Each row that gets acted on is a second Qualified App Run (§1).
@@ -688,7 +688,7 @@ recruiter nothing they did not already have. That email is not free. It
 spends the one piece of attention a candidate gets, and it is read by someone
 who can tell there is nothing in it.
 
-**Receipts already knows whether there is anything to say.** F18 reports what
+**Vouch already knows whether there is anything to say.** F18 reports what
 the CV has gained *after* an application went out. So:
 
 - **The tracker says when a row has gone quiet** — 10 days past the day it was
@@ -759,7 +759,7 @@ Open → Add your CV (upload/paste) → confirm preview → Paste a job posting 
 Open → New match → paste posting → Run match → result.
 
 **From chat:**
-`#receipts` + posting text → window opens with posting prefilled → Run match.
+`#vouch` + posting text → window opens with posting prefilled → Run match.
 
 ## 7. Success metrics
 
@@ -795,7 +795,7 @@ Stretch: 4,000 MAU in December (Tier B). Source: Developer Console → Analytics
 | Low initial traffic | High | Launch plan (plan.md §9), Anna marketing support programs, `?ref=` channel tracking. |
 | September Launch Boost missed | Very high | Accepted: review time makes 200 MAU in September unrealistic. Target is qualifying in October (deadline Nov 30). |
 | Uncertain host API signatures | Medium | Verify against `llms.txt` before writing the call; record the verified signature in a comment beside it. |
-| Name/slug already taken on Anna | Low | Fallback slug `receipts-cv`; display name stays "Receipts". |
+| Name/slug already taken on Anna | Low | Fallback slug `receipts-cv`; display name stays "Vouch". |
 
 ## 10. Monthly maintenance roadmap (program requirement)
 

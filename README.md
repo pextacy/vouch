@@ -1,8 +1,8 @@
-# Receipts
+# Vouch
 
 **Tailor every application. Invent nothing.**
 
-Receipts is an [Anna](https://anna.partners) App. Paste a job posting and it
+Vouch is an [Anna](https://anna.partners) App. Paste a job posting and it
 checks every requirement against your real CV, shows the CV line behind each
 verdict, and writes tailored bullets and a cover letter that use only facts your
 CV already contains. A deterministic verifier reads every generated sentence
@@ -14,7 +14,7 @@ softened.
 ## Why
 
 Most AI resume tools improve a CV by inventing experience: metrics nobody hit,
-tools nobody used. It works until the interview. Receipts takes the opposite
+tools nobody used. It works until the interview. Vouch takes the opposite
 bet — a number, tool, employer or title that is not in your CV never reaches the
 page — and turns the gaps into questions only you can answer, in your own words.
 

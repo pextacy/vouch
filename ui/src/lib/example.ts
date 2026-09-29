@@ -26,7 +26,7 @@ export const EXAMPLE_CV: CVDoc = {
   detected_language: "en",
   warnings: [],
   lines: [
-    { id: "L1", text: "Dilek Aydın — Backend Engineer, Istanbul", section: "header" },
+    { id: "L1", text: "Maya Collins — Backend Engineer, Berlin", section: "header" },
     { id: "L2", text: "Acme Payments — Backend Engineer, 2018–2024", section: "experience" },
     {
       id: "L3",
@@ -53,7 +53,7 @@ export const EXAMPLE_CV: CVDoc = {
       text: "Reduced settlement errors by 18% across the ledger.",
       section: "experience",
     },
-    { id: "L8", text: "MSc Computer Science, Boğaziçi University, 2016", section: "education" },
+    { id: "L8", text: "MSc Computer Science, University of Edinburgh, 2016", section: "education" },
     { id: "L9", text: "Go, Python, PostgreSQL, Kubernetes, Docker, gRPC, Redis", section: "skills" },
   ],
 };

@@ -9,7 +9,7 @@
  * them. The answer existed, and nothing was ever going to read it.
  *
  * So this is the same question asked of the whole shelf at once, and it is
- * the screen that gives someone a reason to open Receipts on a day they are
+ * the screen that gives someone a reason to open Vouch on a day they are
  * not applying to anything new: *these three are worth an hour, and here is
  * the sentence that made them worth it.*
  *

@@ -1,9 +1,9 @@
-# CLAUDE.md — Receipts
+# CLAUDE.md — Vouch
 
 Project instructions for Claude Code (and other coding agents). Read at the start of every session.
 
 ## Project summary
-Receipts is an Anna App for the Anna AI OS Marketplace. The user pastes a job posting; the app extracts its requirements, matches each one to evidence in the user's saved CV lines, then generates tailored CV bullets and a cover letter **grounded only in facts the CV contains**. The product's differentiator and promise: **"Invent nothing."** The name comes from "show me the receipts" — every claim comes with proof.
+Vouch is an Anna App for the Anna AI OS Marketplace. The user pastes a job posting; the app extracts its requirements, matches each one to evidence in the user's saved CV lines, then generates tailored CV bullets and a cover letter **grounded only in facts the CV contains**. The product's differentiator and promise: **"Invent nothing."** To vouch for something is to stand behind it with proof — every claim comes with its receipt.
 
 Goal: earn monthly grants in the Anna Founding Builder Program through Qualified App MAU (500+ in October, 1,000+ in November).
 

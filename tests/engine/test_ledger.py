@@ -35,7 +35,7 @@ def _cv(hash_: str = CV_HASH, *, extra: list[CVLine] | None = None) -> CVDoc:
         hash=hash_,
         detected_language="en",
         lines=[
-            CVLine(id="L1", text="Ada Lovelace — Istanbul", section="header"),
+            CVLine(id="L1", text="Ada Lovelace — London", section="header"),
             CVLine(id="L2", text="Built payment services in Go at Northwind", section="experience"),
             CVLine(id="L3", text="Ran services on Kubernetes for three years", section="experience"),
             CVLine(id="L4", text="Volunteer chess coach, 2016", section="other"),

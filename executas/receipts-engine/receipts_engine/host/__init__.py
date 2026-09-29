@@ -1,7 +1,7 @@
 """Anna host plumbing: stdio frames, invoke context, progress, sampling.
 
 These four modules are the only place that knows the Executa wire protocol.
-They are a dependency-free reimplementation of the three frames Receipts needs,
+They are a dependency-free reimplementation of the three frames Vouch needs,
 verified against the live host docs; the reference ``executa-sdk``
 package is not published on PyPI, so vendoring or depending on it was not an
 option.

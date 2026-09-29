@@ -27,7 +27,7 @@ const STRINGS = {
   evidenced: "Evidenced",
   related: "Related",
   missing: "No evidence yet",
-  tagline: "Receipts on Anna — tailor every application, invent nothing.",
+  tagline: "Vouch on Anna — tailor every application, invent nothing.",
 };
 
 /** Every distinctive word here is something the card must never carry. */
@@ -37,7 +37,7 @@ const SECRETS = [
   "Volta",
   "Kubernetes",
   "reconciliation",
-  "Bogazici",
+  "Edinburgh",
   "https://boards.example.com/posting/9912",
 ];
 

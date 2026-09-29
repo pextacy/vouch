@@ -4,9 +4,9 @@
 [project]
 name = "tool-dev-receipts-engine"
 version = "1.3.0"
-description = "Receipts Engine — Executa stdio tool plugin for the Receipts Anna App"
+description = "Vouch Engine — Executa stdio tool plugin for the Vouch Anna App"
 requires-python = ">=3.12"
-authors = [{ name = "Receipts" }]
+authors = [{ name = "Vouch" }]
 license = { text = "MIT" }
 dependencies = [
   "pydantic>=2.7",

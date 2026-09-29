@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Receipts">
-  <title>Receipts</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Vouch">
+  <title>Vouch</title>
   <!-- Cool paper square: the app's ground, not a generic rounded tile. -->
   <rect width="64" height="64" rx="8" fill="#F5F7FA"/>
   <!-- The highlighter stroke — the one bold element, laid across the line. -->

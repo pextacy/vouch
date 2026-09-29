@@ -36,7 +36,7 @@ const { EXAMPLE_POSTING } = await import("../../ui/src/lib/example");
 const state = await import("../../ui/src/state");
 
 const CV_TEXT = [
-  "Dilek Aydin — Backend Engineer",
+  "Maya Collins — Backend Engineer",
   "Experience",
   "Acme Payments — Backend Engineer, 2018-2024",
   "Built payment reconciliation services in Go for 1,200 merchant accounts.",
@@ -44,7 +44,7 @@ const CV_TEXT = [
   "Ran the settlement workers on k8s across two regions.",
   "Led a team of 4 engineers and owned the on-call rotation.",
   "Education",
-  "MSc Computer Science, Bogazici University, 2016",
+  "MSc Computer Science, University of Edinburgh, 2016",
 ].join("\n");
 
 beforeAll(async () => {
@@ -102,7 +102,7 @@ describe("runTailor", () => {
     // CV on screen, and building on it would cite text that has changed.
     const firstLine = state.cv.value?.doc.lines[0];
     if (!firstLine) throw new Error("fixture CV has no lines");
-    await state.editCvLine(firstLine.id, "Dilek Aydin — Staff Backend Engineer");
+    await state.editCvLine(firstLine.id, "Maya Collins — Staff Backend Engineer");
 
     await state.runTailor();
 
@@ -382,7 +382,7 @@ describe("the interview brief", () => {
   it("still runs after the CV has moved, and says the sent version is older", async () => {
     const firstLine = state.cv.value?.doc.lines[0];
     if (!firstLine) throw new Error("fixture CV has no lines");
-    await state.editCvLine(firstLine.id, "Dilek Aydin — Staff Backend Engineer");
+    await state.editCvLine(firstLine.id, "Maya Collins — Staff Backend Engineer");
 
     await state.runBrief();
 

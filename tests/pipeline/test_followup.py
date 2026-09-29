@@ -43,7 +43,7 @@ def _cv(*added: CVLine) -> CVDoc:
         hash="cv-hash~e1",
         detected_language="en",
         lines=[
-            CVLine(id="L1", text="Dilek Aydın — Backend Engineer", section="header"),
+            CVLine(id="L1", text="Maya Collins — Backend Engineer", section="header"),
             CVLine(
                 id="L2",
                 text="Built payment reconciliation services in Go at Acme Payments.",

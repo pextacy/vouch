@@ -193,7 +193,7 @@ def test_describe_returns_the_bare_manifest(plugin: Plugin) -> None:
     manifest = reply["result"]
     # ToolManifest.from_dict reads these keys directly; a wrapper drops the plugin.
     assert manifest["name"]
-    assert manifest["display_name"] == "Receipts Engine"
+    assert manifest["display_name"] == "Vouch Engine"
     assert manifest["tools"][0]["name"] == "engine"
 
 
@@ -276,7 +276,7 @@ def test_the_process_survives_every_call(plugin: Plugin) -> None:
 
 def test_logs_go_to_stderr_only(plugin: Plugin) -> None:
     plugin.invoke(action="health")
-    assert any("Receipts Engine" in line for line in plugin.stderr_lines)
+    assert any("Vouch Engine" in line for line in plugin.stderr_lines)
 
 
 # ─── Actions ──────────────────────────────────────────────────────────
@@ -478,7 +478,7 @@ def test_audit_cv_reports_a_listed_skill_no_line_shows(plugin: Plugin) -> None:
     """Costs no model call, so it answers on the synchronous channel."""
     text = "\n".join(
         [
-            "Dilek Aydin",
+            "Maya Collins",
             "",
             "Experience",
             "Acme Payments - Backend Engineer, 2018-2024",
@@ -655,7 +655,7 @@ def test_since_applied_reports_what_the_cv_gained_after_it_went_out(plugin: Plug
         ]
     )
     cv = plugin.invoke(action="parse_cv", source="text", text=text)["result"]["data"]
-    # The sentence the user wrote into Receipts a week after applying.
+    # The sentence the user wrote into Vouch a week after applying.
     cv = dict(
         cv,
         hash=f"{cv['hash']}~e1",
@@ -842,7 +842,7 @@ def test_interview_brief_separates_a_receipt_from_a_listed_skill(plugin: Plugin)
     """No model either: the brief is arithmetic over records that already exist."""
     text = "\n".join(
         [
-            "Dilek Aydin",
+            "Maya Collins",
             "",
             "Experience",
             "Acme Payments - Backend Engineer, 2018-2024",

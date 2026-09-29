@@ -1,4 +1,4 @@
-{"kind": "meta", "t": 0, "slug": "receipts", "app": "Receipts", "recorded": "2026-09-16T12:00:00Z", "note": "web_grant is off by default: the URL field fails and the copy routes to paste."}
+{"kind": "meta", "t": 0, "slug": "vouch", "app": "Vouch", "recorded": "2026-09-16T12:00:00Z", "note": "web_grant is off by default: the URL field fails and the copy routes to paste."}
 {"kind": "req", "t": 10, "id": 1, "ns": "window", "method": "hello", "args": {}}
 {"kind": "res", "t": 30, "id": 1, "ok": true, "result": {"window_uuid": "w-6", "capabilities": {}}}
 {"kind": "req", "t": 800, "id": 2, "ns": "web", "method": "fetch", "args": {"urls": ["https://jobs.example.com/1"], "format": "text", "max_chars": 20000}}

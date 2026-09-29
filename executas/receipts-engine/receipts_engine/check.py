@@ -1,6 +1,6 @@
 """The verifier, turned on a document this app did not write.
 
-Everything else in `verify/` guards text Receipts **generates**: a tailored
+Everything else in `verify/` guards text Vouch **generates**: a tailored
 bullet, a letter paragraph, a gap question's angle. That guarantee stops at
 the edge of the app, and the edge is exactly where people live. Someone
 exports their bullets, pastes them into the CV they designed in Word, adds a

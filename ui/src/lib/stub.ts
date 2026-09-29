@@ -129,7 +129,7 @@ export function createStub(): AnnaRuntime {
           cv_hash: hashOf(args.cv) ?? EXAMPLE_MATCH.cv_hash,
           // The one place the recorded verdicts bend to the CV in front of
           // them: a requirement the example leaves unproved, answered by a
-          // line the user typed into Receipts themselves, comes back with
+          // line the user typed into Vouch themselves, comes back with
           // that line cited. Without it the whole loop this product is built
           // on — answer the gap, run it again, watch it close — is invisible
           // in preview mode, which is where the app is reviewed before any

@@ -1,6 +1,6 @@
 """The questions on the form — the last place the app was not looking.
 
-Receipts checks the bullets it rewrites and the letter it writes. Then the
+Vouch checks the bullets it rewrites and the letter it writes. Then the
 application form asks four more things in free text — *"Describe your
 experience with Kubernetes." "Tell us about a time you owned an incident."
 "Why do you want to work here?"* — a human reads every one of them, and until

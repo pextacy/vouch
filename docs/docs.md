@@ -1,4 +1,4 @@
-# Receipts — Technical Documentation
+# Vouch — Technical Documentation
 
 Contracts, data schemas, prompts, verifier algorithm, design system and screen specs. If code disagrees with this document, **update the document or fix the code** — never let them silently drift.
 
@@ -13,8 +13,8 @@ Contracts, data schemas, prompts, verifier algorithm, design system and screen s
 
 | Item | Value |
 |---|---|
-| App slug | `receipts` (fallback `receipts-cv`) |
-| Display name | Receipts |
+| App slug | `vouch` (fallback `vouch-cv`) |
+| Display name | Vouch |
 | Tool Executa | `tool-<handle>-receipts-engine-<uniq>` (minted, never hand-typed) |
 | Skill Executa | `skill-<handle>-receipts-coach-<uniq>` (minted) |
 | Local dev id | `tool-dev-receipts-engine` / `skill-dev-receipts-coach` |
@@ -47,7 +47,7 @@ an integer in `[1, 2]`. The npm package is ahead of the platform, so the
 decision stands until the reference moves; schema 2 validates clean under both.
 
 **Decision: no `chat` grant.** `chat.write_message` is still a stub
-(`not_implemented`). The `#receipts` flow works through the Skill and the LLM's
+(`not_implemented`). The `#vouch` flow works through the Skill and the LLM's
 own `open_app_view` tool, which needs no chat permission, so asking for one
 would be an unused grant in the store's permission list.
 
@@ -73,7 +73,7 @@ does not have.
     "form_factors": ["desktop", "mobile"],
     "bundle": { "format": "static-spa", "entry": "index.html" },
     "views": [{
-      "name": "main", "title": "Receipts", "default": true,
+      "name": "main", "title": "Vouch", "default": true,
       "min_size": { "w": 360, "h": 560 },
       "default_size": { "w": 960, "h": 720 },
       "max_size": { "w": 1440, "h": 1100 },
@@ -458,7 +458,7 @@ step and no footer claim: the document cannot contain a claim the CV does not,
 because it is the CV. Lines are grouped by section in reading order rather
 than stored order — `lib/cv.appendLine` appends to the end, so stored order
 would print a new job under the skills list. The `header` section prints
-without a heading, and the full document carries no Receipts signature: a
+without a heading, and the full document carries no Vouch signature: a
 tool's name at the bottom of someone's CV is the tool taking credit for their
 career. `mode: "additions"` renders only the lines carrying `added_at`, for
 someone who keeps a CV they designed and wants the new sentences to paste;
@@ -496,7 +496,7 @@ Stages: `normalize` → `extract` → `match` → `guard` → `summarize` → `d
 | `invalid_args` | arguments did not match the contract | "Something about that request didn't line up. Run the match again." |
 | `rate_limited` | too many runs in a short time, or too many invokes in flight | "That is a lot of runs in a short time. Wait a moment, then run it again." |
 | `internal_error` | unhandled engine failure | "The engine hit an unexpected problem. Run it again." |
-| `host_unavailable` | UI-side: the Agent could not be reached | "Anna couldn't reach the Receipts engine. Check that your Anna Agent is online." |
+| `host_unavailable` | UI-side: the Agent could not be reached | "Anna couldn't reach the Vouch engine. Check that your Anna Agent is online." |
 | `url_fetch_failed` | UI-side: `web.fetch` refused or failed | "This page didn't let us read it. Paste the posting text instead." |
 | `save_failed` | UI-side: the run succeeded but `storage.set` did not | "The match finished but Anna couldn't save it. It is on screen — copy what you need before you close the window." |
 | `export_failed` | UI-side: the presigned PUT or `upload_init` failed | "The file didn't reach your downloads. Export it again." |
@@ -911,7 +911,7 @@ the app stricter without giving the person a reply address would be trading one
 kind of wrong for another.
 
 **Decision (v1.3) — the same rule, on documents the app did not write.**
-Everything above guards text Receipts *generates*, and the guarantee ended at
+Everything above guards text Vouch *generates*, and the guarantee ended at
 the export: what someone pastes into their own CV in Word, or arrives with from
 another tool, was never checked by anything. `check.py` runs the identical pass
 over a pasted document, sentence by sentence, against the whole CV
@@ -1058,7 +1058,7 @@ is deleted.
 ## 8. Design system
 
 ### 8.1 Direction and rationale
-Subject: job applications. The profession's real tools: **a recruiter's highlighter on a printed CV**, pencil notes, folder tabs. The name reinforces it — receipts are proof, and proof is what gets highlighted. The single memorable element is the highlighter mark; everything else is calm, orderly and cool-toned.
+Subject: job applications. The profession's real tools: **a recruiter's highlighter on a printed CV**, pencil notes, folder tabs. The name reinforces it — to vouch is to back a claim with proof, and proof is what gets highlighted. The single memorable element is the highlighter mark; everything else is calm, orderly and cool-toned.
 
 **Deliberately avoided** (generic / AI-generated tells): cream background + serif display + terracotta accent; black background + single neon accent; newspaper layouts with hairlines and zero radius; grids of identical rounded cards with the same shadow and gradient washes; ALL-CAPS eyebrow labels above every heading; `A · B · C` meta strings; `→` in buttons; monospace for small labels; purple-blue gradients, glassmorphism, emoji icons, circular score gauges, red/green traffic-light badges. Also avoided: literal thermal-receipt styling (zigzag edges, dot-matrix fonts) — too gimmicky and hurts readability.
 
@@ -1186,7 +1186,7 @@ measure (no paragraph past 68ch). It runs over every screen at both widths.
 Desktop (≥ 900 px):
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│ Receipts         [Matches] [Your CV]                  New match  │
+│ Vouch         [Matches] [Your CV]                  New match  │
 ├──────────────────────────────┬───────────────────────────────────┤
 │ Senior Backend Engineer      │  Your CV                          │
 │ Acme Payments                │ ┌───────────────────────────────┐ │
@@ -1254,12 +1254,12 @@ Rules: sentence case, active voice, an action keeps the same name through the fl
 | CV preview | "Check how we read your CV" | Looks right | Inline "Fix a line"; multi-column warning · "Download your CV" sits under the sheet, with "Just the lines you added" beside it once the CV has any, and the note "Plain text, the way an ATS reads it — your original layout is not kept. Nothing in it was rewritten." · the same download is repeated under "Your data" |
 | New match | "Paste a job posting" | Run match | URL failure: "This page didn't let us read it. Paste the posting text instead." |
 | Progress | "Reading the posting" → "Checking your CV" | Cancel | Stage names in ProgressLedger; no percentage number shown |
-| Match map | Role + company | Tailor bullets | Under missing items: "These are worth preparing for, not hiding." · CV read-warnings (truncated, two-column, tables) repeat beside the CV pane · Anything not already `strong` offers "The match got this wrong", which turns the CV sheet into a picker: "Which lines on your CV cover “{requirement}”?" and "Tap the lines that show it. They stay your call — Receipts records that you said so, and never says it checked." · A recorded correction sits under the verdict, behind a rule, reading "You said these lines cover it. Receipts didn't find it — so this one is yours to make.", with "Take that back" beside it · The count is reported separately from the summary sentence and never folded into it: "You marked 2 more as covered. Those are your call, not ours." |
+| Match map | Role + company | Tailor bullets | Under missing items: "These are worth preparing for, not hiding." · CV read-warnings (truncated, two-column, tables) repeat beside the CV pane · Anything not already `strong` offers "The match got this wrong", which turns the CV sheet into a picker: "Which lines on your CV cover “{requirement}”?" and "Tap the lines that show it. They stay your call — Vouch records that you said so, and never says it checked." · A recorded correction sits under the verdict, behind a rule, reading "You said these lines cover it. Vouch didn't find it — so this one is yours to make.", with "Take that back" beside it · The count is reported separately from the summary sentence and never folded into it: "You marked 2 more as covered. Those are your call, not ours." |
 | Tailor | "Suggested bullets" | Accept / Skip / Edit | Dropped: "We couldn't strengthen this line without adding facts that aren't in your CV." |
 | Cover letter | "Cover letter" | Copy / Export | Placeholder warning: "Replace [Company] before sending." · after an export: "Saved", or the count of hand-edited lines the CV could not vouch for |
 | CV audit | "What your CV can't back up" | Add to my CV | Empty: "Nothing in your CV claims more than it shows." · a date conflict offers "Fix the line" instead of an answer box — an explanation nobody reading the CV will see is not evidence · reached from CV preview ("Check what it can't back up") |
 | Make a card | "Make a receipt you can show" | Save the image | Reached from the match map ("Make a card") · The preview is the file — one renderer draws into the page and writes to disk · "On the card: {count} requirements as shapes, and the counts. No lines from your CV, no employer, no wording from the posting." · The role title is off and says so: "The only thing on this card that could say which job you are applying for. Off until you say otherwise.", with "Add “{role}”" beside it · After saving: "Saved. It is an SVG — any browser opens it, and it scales without going soft." |
-| Answer the form | "Answer what the form asked" | Answer from my CV | Reached from the match map beside the cover letter · The paste is split into questions deterministically (`lib/questions.ts`) and the split is shown before anything is spent: "Read as 3 questions", each with "Not a question" beside it · An answered question sits on a document sheet with the CV line under each sentence and "Copy this answer" beside it, because the destination is four boxes in a browser tab · Dropped sentences are counted out loud: "1 sentence was dropped: your CV couldn't back it." · `no_evidence` → "Your CV doesn't show anything that answers this. Rather than write around it, here is the question back." and the F9 answer box · `not_about_you` → "This one is yours to answer. Your CV records what you did, not what you want — so there is nothing here to draw on, and Receipts won't write it for you." and nothing else, ever |
+| Answer the form | "Answer what the form asked" | Answer from my CV | Reached from the match map beside the cover letter · The paste is split into questions deterministically (`lib/questions.ts`) and the split is shown before anything is spent: "Read as 3 questions", each with "Not a question" beside it · An answered question sits on a document sheet with the CV line under each sentence and "Copy this answer" beside it, because the destination is four boxes in a browser tab · Dropped sentences are counted out loud: "1 sentence was dropped: your CV couldn't back it." · `no_evidence` → "Your CV doesn't show anything that answers this. Rather than write around it, here is the question back." and the F9 answer box · `not_about_you` → "This one is yours to answer. Your CV records what you did, not what you want — so there is nothing here to draw on, and Vouch won't write it for you." and nothing else, ever |
 | Check a document | "Check a document before you send it" | Check this document | Reached from CV preview ("Check a document you're sending") and from the cover letter ("Check the version you're sending"), which arrives with the letter already in the box · Clean: "All {checked} sentences trace back to your CV." · Otherwise "{count} sentences of {checked} claim something your CV can't back up", each quoted on a sheet with the words it cannot back bracketed the way a missing requirement is · The answer box says "Added to your CV exactly as you type it. If it didn't happen, take the sentence out of your document instead." — the app never edits the user's file · "Nothing you paste here is saved. It is read once and dropped when you leave." · With an application open: "Written for {posting}, so its name and title are not read as claims", and a toggle to check without it |
 | Gaps | "What your CV doesn't prove yet" | Add to my CV | Empty: "This posting asks for nothing your CV cannot already prove." · after an answer: "Your CV has new lines, so this match is now out of date. Run it again to see what they prove." · the answer box says "Stored exactly as you type it. Nothing here is rewritten." |
 | What keeps coming up | "What keeps coming up" | Add to my CV | Under 3 applications: "You have run {count} so far. This screen starts saying something useful at {needed}." · nothing recurring: "Nothing came up more than once…" · each gap reads "Asked in 5 applications, and proved in none of them." and lists the wordings it merged behind "See how the postings worded it" · a "What you keep proving" section closes it, because a report that is only failures stops being read · reached from the tracker, shown once there is more than one match |
@@ -1284,9 +1284,9 @@ Turkish strings live in `ui/src/i18n/tr.json`: same tone, short neutral phrasing
 name: receipts-coach
 description: Use when the user wants to check a job posting against their CV, tailor a CV to a job, or write a cover letter grounded in their real experience.
 ---
-When the user mentions #receipts or asks to compare a job posting with their CV:
-1. Open the Receipts window with the posting text as payload (view "main", payload {posting_text}).
-2. Do not rewrite the CV in chat. Receipts verifies every claim against the user's CV; chat output does not.
+When the user mentions #vouch or asks to compare a job posting with their CV:
+1. Open the Vouch window with the posting text as payload (view "main", payload {posting_text}).
+2. Do not rewrite the CV in chat. Vouch verifies every claim against the user's CV; chat output does not.
 3. If the user asks why a requirement is missing, explain using the match evidence and suggest honest preparation, never fabricated experience.
 ```
 Verified: the assistant opens the window with
@@ -1296,14 +1296,14 @@ from `anna.entryPayload` and lands on New match with the box filled
 
 ## 11. Marketplace listing copy
 
-- **Name:** Receipts
+- **Name:** Vouch
 - **Subtitle:** Tailor every application. Invent nothing.
-- **Short description:** Paste a job posting. Receipts checks each requirement against your real CV, shows the evidence, and writes tailored bullets and a cover letter that only use facts you already have.
+- **Short description:** Paste a job posting. Vouch checks each requirement against your real CV, shows the evidence, and writes tailored bullets and a cover letter that only use facts you already have.
 - **Search keywords:** CV, resume, job application, cover letter, ATS, job match, career
 - **Primary function (explicit for review):** "Evidence Match — analyzes a job posting against the user's saved CV and returns each requirement with a status (evidenced / related / no evidence) and cited CV lines."
 - **Screenshots (8), by file name** — `listing/screenshots/` is regenerated by `pnpm screenshots` (add `--dark` for the second set) and numbered in the product's reading order, so the upload is a subset rather than a hunt: `08-match-map-desktop`, `10-tailor-desktop` (a suggestion and a dropped one), `11-letter-desktop` (citations showing), `14-interview-desktop`, `06-check-desktop` (a flagged sentence), `20-changed-desktop` — the one frame where the whole loop pays off, a gap closed by the user's own line — `19-followup-desktop`, and `08-match-map-mobile`.
-- **The line that sells it:** "Paste the CV another AI wrote for you. Receipts shows you every sentence you cannot back up — free, instantly, and without a model's opinion in it."
-- **Privacy note:** "Your CV is stored only in your Anna account storage. Receipts uses no external services. Delete everything anytime from Your data."
+- **The line that sells it:** "Paste the CV another AI wrote for you. Vouch shows you every sentence you cannot back up — free, instantly, and without a model's opinion in it."
+- **Privacy note:** "Your CV is stored only in your Anna account storage. Vouch uses no external services. Delete everything anytime from Your data."
 - **Icon concept:** a highlighter stroke across a short bracketed line on a cool paper square — no receipt clip-art.
 
 ## 12. Commands

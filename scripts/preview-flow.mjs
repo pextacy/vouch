@@ -43,7 +43,7 @@ Nice to have
  * shape the screen exists to tell apart, a real gap from a real strength.
  */
 const EXTRA_POSTINGS = [
-  `Platform Engineer — Harborline (Hybrid, Istanbul)
+  `Platform Engineer — Harborline (Hybrid, Amsterdam)
 
 Requirements
 - 4+ years building backend services
@@ -212,7 +212,7 @@ export async function runExtraCv(page, base) {
 }
 
 /** Long enough to clear the 200-character floor on "Use this text". */
-const SECOND_CV = `Dilek Aydin — Data Engineer, Istanbul
+const SECOND_CV = `Maya Collins — Data Engineer, Berlin
 
 Experience
 Acme Payments — Data Engineer, 2018-2024
@@ -221,7 +221,7 @@ Ran the nightly Airflow jobs that fed the finance team's dashboards.
 Owned data quality checks across twelve upstream sources.
 
 Education
-MSc Computer Science, Bogazici University, 2016
+MSc Computer Science, University of Edinburgh, 2016
 
 Skills
 Python, SQL, dbt, Airflow, PostgreSQL`;

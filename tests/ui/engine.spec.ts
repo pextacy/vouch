@@ -23,7 +23,7 @@ import { engineToolId } from "../../ui/src/lib/ids";
 import { EXAMPLE_POSTING } from "../../ui/src/lib/example";
 
 const CV_TEXT = [
-  "Dilek Aydin — Backend Engineer",
+  "Maya Collins — Backend Engineer",
   "Experience",
   "Acme Payments — Backend Engineer, 2018-2024",
   "Built payment reconciliation services in Go for 1,200 merchant accounts.",
@@ -31,7 +31,7 @@ const CV_TEXT = [
   "Ran the settlement workers on k8s across two regions.",
   "Led a team of 4 engineers and owned the on-call rotation.",
   "Education",
-  "MSc Computer Science, Bogazici University, 2016",
+  "MSc Computer Science, University of Edinburgh, 2016",
 ].join("\n");
 
 beforeAll(async () => {

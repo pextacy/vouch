@@ -38,7 +38,7 @@ listed_not_shown   every line cited for it is in the skills list. The match
                    weakest possible answer to "where did you use it?" — the
                    single most probed weakness on a CV (`audit.py`).
 self_added         every line cited for it is one the user typed into
-                   Receipts (`added_at`). It is admissible evidence here, but
+                   Vouch (`added_at`). It is admissible evidence here, but
                    it is almost certainly not in the document that was sent.
 related_only       the match called it `partial`. Adjacent, not the same
                    thing, and the interviewer's job is to find the seam.

@@ -1,11 +1,11 @@
 ---
 name: receipts-coach
-title: Receipts Coach
+title: Vouch Coach
 version: 1.1.0
 description: >-
   Use when the user wants to check a job posting against their CV, tailor a CV
   to a job, or write a cover letter grounded in their real experience.
-author: Receipts
+author: Vouch
 license: MIT
 tags: [career, cv, resume, job-search, cover-letter]
 metadata:
@@ -16,9 +16,9 @@ metadata:
     execution_mode: prompt
 ---
 
-# Receipts Coach
+# Vouch Coach
 
-Receipts checks a job posting against the user's saved CV line by line and
+Vouch checks a job posting against the user's saved CV line by line and
 writes only what the CV can prove. You are the part of that promise that lives
 in chat.
 

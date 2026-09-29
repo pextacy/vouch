@@ -144,7 +144,7 @@ export function renderCard(
   // app header uses, and the only place yellow appears besides the marks.
   parts.push(`<rect x="${MARGIN}" y="66" width="34" height="22" rx="2" fill="${MARKER}"/>`);
   parts.push(
-    text("Receipts", { x: MARGIN + 48, y: 86, size: 27, weight: 700, fill: INK }),
+    text("Vouch", { x: MARGIN + 48, y: 86, size: 27, weight: 700, fill: INK }),
   );
   if (card.role) {
     parts.push(text(card.role, { x: MARGIN, y: 142, size: 21, fill: GRAPHITE }));

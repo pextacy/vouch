@@ -362,7 +362,7 @@ export async function boot(): Promise<void> {
 }
 
 /**
- * A posting handed over by the assistant (`#receipts` + text) should land the
+ * A posting handed over by the assistant (`#vouch` + text) should land the
  * user on the New match screen with the box already filled, not on a blank
  * onboarding page they have to navigate out of.
  */

@@ -240,15 +240,15 @@ _STRINGS: Final[dict[str, dict[str, Any]]] = {
             "without adding facts your CV does not contain."
         ),
         "placeholders": "Replace before sending: {items}",
-        "footer": "Written with Receipts. Every line above is traceable to your CV.",
+        "footer": "Written with Vouch. Every line above is traceable to your CV.",
         "footer_edited": (
-            "Written with Receipts. {count} line(s) you edited by hand could not be traced "
+            "Written with Vouch. {count} line(s) you edited by hand could not be traced "
             "back to your CV — check them before you send this."
         ),
         "cv_stem": "cv",
         "cv_additions_stem": "cv-additions",
         "additions_note": (
-            "These are the lines you added in Receipts, exactly as you typed them. "
+            "These are the lines you added in Vouch, exactly as you typed them. "
             "Paste them into your own CV — nothing here was rewritten."
         ),
         "section": {
@@ -261,7 +261,7 @@ _STRINGS: Final[dict[str, dict[str, Any]]] = {
             "skills": "Skills",
             "other": "Other",
         },
-        "file_stem": "receipts",
+        "file_stem": "vouch",
     },
     "tr": {
         "role_fallback": "Uyarlanmış başvuru",
@@ -272,15 +272,15 @@ _STRINGS: Final[dict[str, dict[str, Any]]] = {
             "güçlendirilemedi."
         ),
         "placeholders": "Göndermeden önce değiştirin: {items}",
-        "footer": "Receipts ile hazırlandı. Yukarıdaki her satır CV'nize dayanıyor.",
+        "footer": "Vouch ile hazırlandı. Yukarıdaki her satır CV'nize dayanıyor.",
         "footer_edited": (
-            "Receipts ile hazırlandı. Elle düzenlediğiniz {count} satır CV'nize "
+            "Vouch ile hazırlandı. Elle düzenlediğiniz {count} satır CV'nize "
             "dayandırılamadı — göndermeden önce kontrol edin."
         ),
         "cv_stem": "cv",
         "cv_additions_stem": "cv-eklenenler",
         "additions_note": (
-            "Bunlar Receipts'te eklediğiniz satırlar, yazdığınız gibi. Kendi CV'nize "
+            "Bunlar Vouch'ta eklediğiniz satırlar, yazdığınız gibi. Kendi CV'nize "
             "yapıştırın — burada hiçbir şey yeniden yazılmadı."
         ),
         "section": {
@@ -293,6 +293,6 @@ _STRINGS: Final[dict[str, dict[str, Any]]] = {
             "skills": "Beceriler",
             "other": "Diğer",
         },
-        "file_stem": "receipts",
+        "file_stem": "vouch",
     },
 }
