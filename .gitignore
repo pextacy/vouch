@@ -27,3 +27,24 @@ fixtures/sessions/
 .idea/
 .vscode/
 *.swp
+
+# Secrets. The app needs none (LLM access is host sampling, no keys), so any
+# of these appearing in the tree is a mistake; the repository is public.
+.env
+.env.*
+.npmrc
+*.pem
+*.key
+credentials.json
+
+# Logs, test and coverage output, local recordings
+*.log
+test-results/
+playwright-report/
+.coverage
+htmlcov/
+*.webm
+*.mp4
+
+# Local agent settings
+.claude/settings.local.json
