@@ -3,7 +3,7 @@
   "permissions": ["tools.invoke", "storage.read", "storage.write", "ui.svg"],
   "host_capabilities": ["llm.sample", "aps.kv", "aps.files", "web.fetch"],
   "required_executas": [
-    { "tool_id": "bundled:receipts-engine", "min_version": "1.0.0", "version": "latest" },
+    { "tool_id": "bundled:receipts-engine", "min_version": "1.3.0", "version": "latest" },
     { "tool_id": "bundled:receipts-coach", "version": "latest" }
   ],
   "optional_executas": [],

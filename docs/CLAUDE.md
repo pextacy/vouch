@@ -8,13 +8,14 @@ Receipts is an Anna App for the Anna AI OS Marketplace. The user pastes a job po
 Goal: earn monthly grants in the Anna Founding Builder Program through Qualified App MAU (500+ in October, 1,000+ in November).
 
 ## Read first
-All four live in `docs/`, beside this file.
+All of them live in `docs/`, beside this file.
 
 | File | When |
 |---|---|
 | `prd.md` | Feature scope, acceptance criteria, metrics |
 | `plan.md` | Architecture, repo layout, test strategy, growth |
 | `docs.md` | Tool contract, schemas, prompts, verifier, design system, screen copy |
+| `privacy.md` | The public privacy page behind `app.json.privacy_url` — any change to what is stored, sent or deleted must update it |
 
 ## Anna platform knowledge — source hierarchy
 1. The facts recorded below, and the comments beside each call in the code

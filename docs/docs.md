@@ -40,10 +40,25 @@ and has no `storage` property — a schema-3 manifest fails
 production regardless, and the legacy `aps.*` capability strings cover the
 declaration.
 
+*Rechecked Sep 29 (CLI 0.1.56, `@anna-ai/app-schema` 0.23.0):* the schema
+package now accepts `schema: 3` and a `storage` block, but the live manifest
+reference (`/developers/reference/app-manifest.md`) still documents `schema` as
+an integer in `[1, 2]`. The npm package is ahead of the platform, so the
+decision stands until the reference moves; schema 2 validates clean under both.
+
 **Decision: no `chat` grant.** `chat.write_message` is still a stub
 (`not_implemented`). The `#receipts` flow works through the Skill and the LLM's
 own `open_app_view` tool, which needs no chat permission, so asking for one
 would be an unused grant in the store's permission list.
+
+**Decision (v1.3): the engine's `min_version` follows the newest action the
+bundle calls.** The v1.3 bundle calls `check_document`, `answer_question`,
+`line_ledger`, `since_applied` and the other actions that first shipped in
+engine 1.3.0; against a 1.0 engine every one of those screens would fail with a
+code the user cannot act on. The two ship together, so this only matters when
+the host resolves an older engine — which is exactly when it has to be refused.
+Raise it again whenever the bundle starts calling an action a released engine
+does not have.
 
 ```json
 {
@@ -51,7 +66,7 @@ would be an unused grant in the store's permission list.
   "permissions": ["tools.invoke", "storage.read", "storage.write", "ui.svg"],
   "host_capabilities": ["llm.sample", "aps.kv", "aps.files", "web.fetch"],
   "required_executas": [
-    { "tool_id": "bundled:receipts-engine", "min_version": "1.0.0", "version": "latest" },
+    { "tool_id": "bundled:receipts-engine", "min_version": "1.3.0", "version": "latest" },
     { "tool_id": "bundled:receipts-coach", "version": "latest" }
   ],
   "ui": {
